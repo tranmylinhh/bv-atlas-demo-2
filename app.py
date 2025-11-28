@@ -133,59 +133,75 @@ with col2: st.subheader("BV-Atlas Marketing")
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ
+# 1. KHỞI TẠO LỊCH SỬ (Thêm trường 'type' để phân loại tin nhắn)
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay bạn cần tìm tài liệu hay check khuyến mãi gì?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay bạn cần tìm tài liệu hay check khuyến mãi gì?"}
     ]
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT
+# 2. HIỂN THỊ LỊCH SỬ CHAT (CẬP NHẬT LOGIC HIỂN THỊ ẢNH)
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
-            # Nút Feedback nhỏ gọn
-            if i > 0:
+            # Nút Feedback
+            if i > 0 and msg.get("type") == "text":
                 c1, c2, c3 = st.columns([0.5, 0.5, 8])
                 with c1: 
                     if st.button("👍", key=f"up_{i}"): st.toast("Đã thích!")
                 with c2: 
                     if st.button("👎", key=f"down_{i}"): st.toast("Đã ghi nhận!")
     else:
+        # Tin nhắn User
         with st.chat_message(msg["role"], avatar="👤"):
-            st.markdown(msg["content"])
+            # Kiểm tra loại tin nhắn
+            if msg.get("type") == "image":
+                # Nếu là ảnh thì hiển thị ảnh
+                st.image(msg["content"], width=200)
+            else:
+                # Nếu là text thì hiển thị text
+                st.markdown(msg["content"])
 
-# 3. KHU VỰC NHẬP LIỆU & ĐÍNH KÈM (THIẾT KẾ MỚI)
-# Tạo 2 cột: Cột trái là nút Ghim, Cột phải là Ô chat (nhưng do chat_input fix cứng nên ta để nút ghim ngay trên)
-
+# 3. KHU VỰC NHẬP LIỆU & ĐÍNH KÈM
 col_attach, col_space = st.columns([1, 5])
 with col_attach:
-    # Nút bấm nhỏ (Popover) thay vì Expander to
     with st.popover("📎", help="Đính kèm ảnh"):
         st.markdown("### Chọn ảnh")
-        uploaded_img = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
+        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
         
-        img_data = None
-        if uploaded_img:
-            img_data = Image.open(uploaded_img)
-            st.image(img_data, width=150)
-            st.success("Đã chọn ảnh!")
+        # Xử lý ảnh upload ngay tại đây để dùng cho phần gửi bên dưới
+        current_img_data = None
+        if uploaded_file:
+            current_img_data = Image.open(uploaded_file)
+            st.image(current_img_data, width=150)
+            st.success("Đã chọn! Hãy nhập câu hỏi và nhấn Enter.")
 
-# Ô Nhập liệu (Có gợi ý Placeholder)
+# 4. XỬ LÝ KHI USER GỬI TIN NHẮN (QUAN TRỌNG NHẤT)
 if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
-    # User
-    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # BƯỚC 1: Kiểm tra xem có ảnh đang chờ gửi không
+    if current_img_data:
+        # Nếu có, thêm ảnh vào lịch sử trước
+        st.session_state.messages.append({"role": "user", "type": "image", "content": current_img_data})
+        # Hiển thị ngay lập tức
+        with st.chat_message("user", avatar="👤"):
+            st.image(current_img_data, width=200)
+            
+    # BƯỚC 2: Thêm tin nhắn chữ vào lịch sử
+    st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-    # Bot
+    # BƯỚC 3: Gửi cho Bot xử lý
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("..."):
             try:
+                # Lấy lịch sử (chỉ lấy phần text để đưa vào prompt)
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
-                    role_name = "User" if msg["role"] == "user" else "BV-Atlas"
-                    history_text += f"{role_name}: {msg['content']}\n"
+                    if msg.get("type") == "text":
+                        role_name = "User" if msg["role"] == "user" else "BV-Atlas"
+                        history_text += f"{role_name}: {msg['content']}\n"
 
                 final_prompt = [
                     f"{SYSTEM_PROMPT}\n",
@@ -194,14 +210,19 @@ if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
                     f"CÂU HỎI USER: {prompt}"
                 ]
                 
-                if img_data:
-                    final_prompt.append("LƯU Ý: User vừa đính kèm ảnh qua nút 📎. Hãy phân tích ảnh này.")
-                    final_prompt.append(img_data)
+                # Nếu vừa gửi kèm ảnh thì đưa ảnh vào prompt cho Bot nhìn
+                if current_img_data:
+                    final_prompt.append("LƯU Ý: User vừa gửi một bức ảnh (đã hiển thị trong lịch sử). Hãy phân tích ảnh đó.")
+                    final_prompt.append(current_img_data)
                 
                 response = model.generate_content(final_prompt)
                 
+                # Hiển thị câu trả lời của Bot
                 st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
+                # Lưu câu trả lời vào lịch sử
+                st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
+                
+                # Rerun để cập nhật giao diện và reset uploader nếu cần
                 st.rerun()
                 
             except Exception as e:
