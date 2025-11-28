@@ -36,7 +36,7 @@ st.markdown("""
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
     # Dùng model ổn định nhất
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.0-flash')
 else:
     st.error("⚠️ Chưa nhập API Key trong Secrets!")
     st.stop()
