@@ -13,62 +13,51 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (STYLE GIỐNG ẢNH MẪU 99%) ---
+# --- 2. CSS GIAO DIỆN (TRẮNG TINH KHÔI & TỐI GIẢN) ---
 st.markdown("""
 <style>
-    /* Nền trắng sạch sẽ */
+    /* Nền trắng toàn bộ */
     .stApp { background-color: #FFFFFF; color: #000000; }
     
     /* === BONG BÓNG CHAT === */
-    .stChatMessage { padding: 15px; border-radius: 15px; margin-bottom: 5px; display: flex; color: #000000 !important; }
-    .stChatMessage p, .stChatMessage li { color: #000000 !important; font-size: 16px; line-height: 1.5; }
+    .stChatMessage { padding: 10px 15px; border-radius: 18px; margin-bottom: 5px; display: flex; color: #000000 !important; }
+    .stChatMessage p, .stChatMessage li { color: #000000 !important; margin-bottom: 0px; }
 
-    /* BOT (Trái - Xám Nhạt) */
+    /* BOT (Trái) - Xám nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #F2F4F6; /* Xám nhạt */
-        border: none;
-        flex-direction: row;
+        background-color: #F2F4F6; border: none; flex-direction: row;
     }
     
-    /* USER (Phải - Xanh Nhạt - Không viền hoặc viền rất mờ) */
+    /* USER (Phải) - Xanh Zalo Nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #EBF7FF; /* Xanh nhạt giống ảnh */
-        border: none;
+        background-color: #E5F3FF; /* Màu xanh nhạt dễ chịu */
+        border: 1px solid #CDE8FF;
         flex-direction: row-reverse;
         text-align: right;
     }
-    /* Chỉnh lề nội dung User */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { margin-left: 10px; margin-right: 0; }
 
-    /* Link màu Xanh đậm */
-    .stChatMessage a { color: #0068C9 !important; font-weight: 600; text-decoration: none; }
-    .stChatMessage a:hover { text-decoration: underline; }
-
-    /* === THANH NHẬP LIỆU (Input) === */
-    /* Bo tròn như viên thuốc, nền xám */
-    .stChatInput textarea {
-        background-color: #F0F2F5 !important; /* Xám nhạt */
-        color: #000000 !important;
-        border: 1px solid #E0E0E0 !important;
-        border-radius: 25px !important; /* Bo tròn */
-        padding: 10px 15px;
-    }
+    /* Link */
+    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
     
-    /* Ẩn các thành phần thừa */
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    
-    /* Chỉnh nút Feedback nhỏ lại */
-    .stButton button {
+    /* === THANH NHẬP LIỆU & NÚT ĐÍNH KÈM === */
+    /* Làm đẹp nút Popover (Cái ghim) */
+    button[kind="secondary"] {
         border: none;
-        background: transparent;
+        background-color: transparent;
         color: #555;
-        padding: 0px 10px;
-        font-size: 14px;
+        font-size: 20px;
+        padding: 0px;
     }
-    .stButton button:hover {
+    button[kind="secondary"]:hover {
         color: #0068C9;
-        background: transparent;
+        background-color: transparent;
     }
+    
+    /* Ô nhập liệu */
+    .stTextInput input { background-color: #FFFFFF !important; color: #000000 !important; border-radius: 20px; border: 1px solid #ddd; }
+    
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -134,55 +123,56 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 5. PHONG CÁCH:
    - Thân thiện, ngắn gọn. Xưng "Mình" - "Bạn".
 """
-# --- 6. GIAO DIỆN CHÍNH (LAYOUT 1 CỘT) ---
+# --- 6. GIAO DIỆN CHÍNH ---
 
-# Tiêu đề & Logo
-col1, col2 = st.columns([1, 6])
-with col1: st.image(BOT_AVATAR, width=70)
-with col2:
-    st.subheader("BV-Atlas: Marketing Assistant")
-    st.caption("Trợ lý tra cứu Tài liệu & Hình ảnh")
+# Tiêu đề tối giản
+col1, col2 = st.columns([1, 8])
+with col1: st.image(BOT_AVATAR, width=50)
+with col2: st.subheader("BV-Atlas Marketing")
 
 if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Admin chưa upload file `Du_lieu_BV_Atlas.docx`.")
+    st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
 # 1. KHỞI TẠO LỊCH SỬ
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": f"Xin chào! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì hôm nay?"}
+        {"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay bạn cần tìm tài liệu hay check khuyến mãi gì?"}
     ]
 
 # 2. HIỂN THỊ LỊCH SỬ CHAT
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "assistant":
-        # Tin nhắn Bot
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
-            
-            # --- TÍNH NĂNG FEEDBACK (CHỈ HIỆN CHO CÂU TRẢ LỜI CỦA BOT) ---
-            if i > 0: # Không hiện cho câu chào đầu tiên
-                col_fb1, col_fb2, col_fb3 = st.columns([4, 1, 1])
-                with col_fb1: st.caption("Bạn thấy kết quả này thế nào?")
-                with col_fb2: 
-                    if st.button("👍", key=f"like_{i}"): st.toast("Cảm ơn bạn đã đánh giá!")
-                with col_fb3: 
-                    if st.button("👎", key=f"dislike_{i}"): st.toast("Ban Marketing sẽ cải thiện thêm!")
+            # Nút Feedback nhỏ gọn
+            if i > 0:
+                c1, c2, c3 = st.columns([0.5, 0.5, 8])
+                with c1: 
+                    if st.button("👍", key=f"up_{i}"): st.toast("Đã thích!")
+                with c2: 
+                    if st.button("👎", key=f"down_{i}"): st.toast("Đã ghi nhận!")
     else:
-        # Tin nhắn User
         with st.chat_message(msg["role"], avatar="👤"):
             st.markdown(msg["content"])
 
-# 3. KHU VỰC UPLOAD (Nằm ngay trên ô nhập liệu)
-with st.expander("📎 Đính kèm ảnh/Poster (Nhấn để mở)", expanded=False):
-    uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
-    img_data = None
-    if uploaded_img:
-        img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Đã đính kèm", width=200)
-        st.success("Ảnh đã sẵn sàng!")
+# 3. KHU VỰC NHẬP LIỆU & ĐÍNH KÈM (THIẾT KẾ MỚI)
+# Tạo 2 cột: Cột trái là nút Ghim, Cột phải là Ô chat (nhưng do chat_input fix cứng nên ta để nút ghim ngay trên)
 
-# 4. Ô NHẬP LIỆU (Placeholder có gợi ý)
-if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia, Poster CTKM này là gì?)"):
+col_attach, col_space = st.columns([1, 5])
+with col_attach:
+    # Nút bấm nhỏ (Popover) thay vì Expander to
+    with st.popover("📎", help="Đính kèm ảnh"):
+        st.markdown("### Chọn ảnh")
+        uploaded_img = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
+        
+        img_data = None
+        if uploaded_img:
+            img_data = Image.open(uploaded_img)
+            st.image(img_data, width=150)
+            st.success("Đã chọn ảnh!")
+
+# Ô Nhập liệu (Có gợi ý Placeholder)
+if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
     # User
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="👤"):
@@ -199,22 +189,20 @@ if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia, Po
 
                 final_prompt = [
                     f"{SYSTEM_PROMPT}\n",
-                    f"=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n",
+                    f"=== DỮ LIỆU ===\n{KNOWLEDGE_TEXT}\n",
                     f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
                     f"CÂU HỎI USER: {prompt}"
                 ]
                 
                 if img_data:
-                    final_prompt.append("User gửi ảnh. Hãy phân tích.")
+                    final_prompt.append("LƯU Ý: User vừa đính kèm ảnh qua nút 📎. Hãy phân tích ảnh này.")
                     final_prompt.append(img_data)
                 
                 response = model.generate_content(final_prompt)
                 
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
-                
-                # Feedback hiện ngay sau khi trả lời xong
-                st.rerun() # Load lại trang để hiện nút like/dislike
+                st.rerun()
                 
             except Exception as e:
                 st.error(f"Lỗi: {e}")
