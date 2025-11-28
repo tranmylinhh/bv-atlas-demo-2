@@ -28,7 +28,7 @@ if 'GOOGLE_API_KEY' in st.secrets:
     # -----------------------------------------------------------
     # QUAN TRỌNG: DÙNG ĐÚNG TÊN MODEL TRONG DANH SÁCH CỦA BẠN
     # -----------------------------------------------------------
-    model = genai.GenerativeModel('gemini-2.0-flash-exp') 
+    model = genai.GenerativeModel('gemini-1.5-flash') 
     
 else:
     st.error("⚠️ Chưa nhập API Key trong Secrets!")
