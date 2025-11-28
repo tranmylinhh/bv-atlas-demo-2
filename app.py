@@ -16,18 +16,12 @@ st.markdown("""
 <style>
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #005792; 
-        border-radius: 15px 15px 0px 15px;
-        padding: 15px;
+        background-color: #005792; border-radius: 15px 15px 0px 15px; padding: 15px;
     }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #262730; 
-        border-radius: 15px 15px 15px 0px;
-        padding: 15px;
-        border: 1px solid #444;
+        background-color: #262730; border-radius: 15px 15px 15px 0px; padding: 15px; border: 1px solid #444;
     }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -36,7 +30,7 @@ if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
     model = genai.GenerativeModel('gemini-2.0-flash')
 else:
-    st.error("⚠️ Chưa nhập API Key trong Secrets!")
+    st.error("⚠️ Chưa nhập API Key.")
     st.stop()
 
 # --- 4. HÀM ĐỌC DỮ LIỆU ---
@@ -58,81 +52,66 @@ def load_knowledge_base():
 
 KNOWLEDGE_TEXT = load_knowledge_base()
 
-# --- 5. SYSTEM PROMPT (UPDATE LOGIC PHÂN BIỆT DỊCH VỤ vs CTKM) ---
+# --- 5. SYSTEM PROMPT (THẮT CHẶT QUY TẮC SẢN PHẨM) ---
 current_date = datetime.now().strftime("%d/%m/%Y")
 
 SYSTEM_PROMPT = f"""
 VAI TRÒ:
 Bạn là BV-Atlas, trợ lý AI của Ban Marketing Bảo Việt.
-Avatar của bạn là Logo Bảo Việt.
-
 THÔNG TIN THỜI GIAN: Hôm nay là {current_date}.
 
-QUY TẮC NGHIỆP VỤ (BẮT BUỘC TUÂN THỦ):
+QUY TẮC NGHIỆP VỤ (BẮT BUỘC TUÂN THỦ TUYỆT ĐỐI):
 
-1. PHÂN BIỆT "CHƯƠNG TRÌNH KHUYẾN MÃI" (CTKM) VÀ "DỊCH VỤ":
-   - CTKM: Là các chương trình CÓ THỜI HẠN (Từ ngày... đến ngày...) và có ƯU ĐÃI cụ thể (Tặng quà, Giảm phí, Quay số).
-   - DỊCH VỤ/TIỆN ÍCH: Là các quyền lợi mặc định (Ví dụ: Bảo lãnh viện phí, Bồi thường, Tổng đài...). Đây KHÔNG PHẢI là chương trình khuyến mãi.
-   => Khi user hỏi "CTKM đang chạy", TUYỆT ĐỐI KHÔNG liệt kê các Dịch vụ/Tiện ích vào.
-
-2. KIỂM TRA HIỆU LỰC CTKM:
+1. KIỂM TRA HẠN:
    - Chỉ liệt kê các CTKM mà: Ngày kết thúc >= {current_date}.
-   - Các CTKM đã quá hạn: KHÔNG được liệt kê vào danh sách đang chạy.
+   - Các CTKM đã quá hạn: Coi như KHÔNG TỒN TẠI trong danh sách đang chạy.
 
-3. PHONG CÁCH TRẢ LỜI:
+2. ĐÚNG ĐỐI TƯỢNG SẢN PHẨM (QUAN TRỌNG NHẤT):
+   - Nếu User hỏi CTKM của sản phẩm A (VD: An Gia), CHỈ tìm CTKM áp dụng cho sản phẩm A.
+   - Nếu sản phẩm A không có CTKM nào đang chạy -> Trả lời thẳng thắn: "Hiện tại sản phẩm [Tên SP] chưa có chương trình khuyến mãi nào đang diễn ra."
+   - TUYỆT ĐỐI KHÔNG lấy CTKM của sản phẩm B (VD: Flexi) để trả lời cho sản phẩm A. (Flexi là Du lịch, An Gia là Sức khỏe -> Không liên quan).
+
+3. PHÂN BIỆT DỊCH VỤ vs KHUYẾN MÃI:
+   - "Bảo lãnh viện phí", "Bồi thường" là DỊCH VỤ. Không được liệt kê vào danh sách Khuyến mãi.
+
+4. PHONG CÁCH:
    - Thân thiện, dùng emoji 😊.
-   - Nếu tìm thấy CTKM, hãy trình bày rõ: Tên chương trình, Thời gian, và Quà tặng.
-   - Luôn gợi ý thêm ở cuối câu.
-
-4. NẾU KHÔNG CÓ THÔNG TIN:
-   - Hướng dẫn liên hệ Ms. Linh (Ban Marketing).
+   - Nếu không có CTKM, hãy gợi ý user xem quyền lợi hoặc biểu phí của sản phẩm đó thay thế.
 """
 
 # --- 6. GIAO DIỆN CHÍNH ---
 
-# === SIDEBAR ===
 with st.sidebar:
     st.image(BOT_AVATAR, width=150)
     st.markdown("---")
     st.markdown("### 📸 Tra cứu Ảnh")
     uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
-    
     img_data = None
     if uploaded_img:
         img_data = Image.open(uploaded_img)
         st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
 
-# === MAIN ===
 st.title("🛡️ BV-Atlas: Marketing Assistant")
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Admin chưa upload file `Du_lieu_BV_Atlas.docx` lên GitHub.")
 
-# Khởi tạo lịch sử
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay ({current_date}), bạn cần tra cứu thông tin gì về sản phẩm hay các CTKM đang chạy không?"}
-    ]
+    st.session_state.messages = [{"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay ({current_date}), bạn cần tra cứu thông tin gì?"}]
 
-# Hiển thị lịch sử
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
-        with st.chat_message(msg["role"], avatar=BOT_AVATAR):
-            st.markdown(msg["content"])
+        with st.chat_message(msg["role"], avatar=BOT_AVATAR): st.markdown(msg["content"])
     else:
-        with st.chat_message(msg["role"], avatar="👤"):
-            st.markdown(msg["content"])
+        with st.chat_message(msg["role"], avatar="👤"): st.markdown(msg["content"])
 
-# Ô Nhập liệu
 if prompt := st.chat_input("Nhập câu hỏi..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(prompt)
+    with st.chat_message("user", avatar="👤"): st.markdown(prompt)
 
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("Đang tra cứu..."):
             try:
-                # Tạo bộ nhớ
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
                     role_name = "User" if msg["role"] == "user" else "BV-Atlas"
