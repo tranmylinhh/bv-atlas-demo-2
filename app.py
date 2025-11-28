@@ -39,7 +39,7 @@ def get_files_text(uploaded_files):
                 for para in doc.paragraphs: text += para.text + "\n"
             elif ext == "txt":
                 text += file.read().decode("utf-8") + "\n"
-        exceptException: pass
+        except Exception: pass
     return text
 
 # 5. GIAO DIỆN CHÍNH
