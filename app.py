@@ -6,7 +6,9 @@ import os
 from datetime import datetime
 
 # --- 1. CẤU HÌNH TRANG ---
-st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="wide")
+# Cũ: layout="wide"
+# Mới: layout="centered"
+st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="centered")
 
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
@@ -135,22 +137,31 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 5. PHONG CÁCH:
    - Thân thiện, ngắn gọn. Xưng "Mình" - "Bạn".
 """
-# --- 6. GIAO DIỆN CHÍNH ---
+# --- 6. GIAO DIỆN CHÍNH (LAYOUT 1 CỘT - MOBILE FRIENDLY) ---
 
-with st.sidebar:
-    st.image(BOT_AVATAR, width=150)
-    st.markdown("---")
-    st.markdown("### 📸 Tra cứu Ảnh")
-    uploaded_img = st.file_uploader("Upload ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
-    img_data = None
-    if uploaded_img:
-        img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
-
-st.title("🛡️ BV-Atlas: Marketing Assistant")
+# Tiêu đề & Logo nằm cùng hàng (tạo cảm giác App)
+col1, col2 = st.columns([1, 5])
+with col1:
+    st.image(BOT_AVATAR, width=80)
+with col2:
+    st.title("BV-Atlas Marketing")
+    st.caption("Trợ lý tra cứu Tài liệu & Hình ảnh")
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
+
+# === KHU VỰC UPLOAD (Đưa vào giữa - Dạng Thanh trượt Expander) ===
+# Thay thế hoàn toàn cho Sidebar bên trái trước đây
+with st.expander("📎 Đính kèm ảnh/Poster để tra cứu (Nhấn để mở)", expanded=False):
+    uploaded_img = st.file_uploader("Chọn ảnh từ máy...", type=['jpg', 'png', 'jpeg'])
+    
+    img_data = None
+    if uploaded_img:
+        img_data = Image.open(uploaded_img)
+        st.image(img_data, caption="Đã đính kèm ảnh", width=200)
+        st.success("✅ Ảnh đã sẵn sàng! Hãy đặt câu hỏi bên dưới.")
+
+# === KHUNG CHAT (Giữ nguyên logic bên dưới) ===
 
 # Khởi tạo lịch sử (Bot nói trước -> Luôn là số lẻ 1)
 if "messages" not in st.session_state:
