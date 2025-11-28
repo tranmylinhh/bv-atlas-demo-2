@@ -13,25 +13,15 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (FIX MÀU ĐEN TUYỆT ĐỐI) ---
+--- 2. CSS GIAO DIỆN (TỐI GIẢN - CLEAN UI) ---
 st.markdown("""
 <style>
-    /* 1. Nền & Chữ chung */
+    /* Nền trắng */
     .stApp { background-color: #FFFFFF; color: #000000; }
     
-    /* 2. Tiêu đề Header (Fix lỗi tàng hình) */
-    h1, h2, h3 { color: #000000 !important; }
-    .stCaption { color: #555555 !important; }
-
-    /* 3. Bong bóng chat */
-    .stChatMessage {
-        padding: 15px; border-radius: 18px; margin-bottom: 5px; 
-        display: flex; color: #000000 !important;
-    }
-    /* Ép mọi chữ bên trong thành màu đen */
-    .stChatMessage p, .stChatMessage li, .stChatMessage div { 
-        color: #000000 !important; 
-    }
+    /* === BONG BÓNG CHAT === */
+    .stChatMessage { padding: 10px 15px; border-radius: 18px; margin-bottom: 5px; display: flex; color: #000000 !important; }
+    .stChatMessage p, .stChatMessage li { color: #000000 !important; margin-bottom: 0px; }
 
     /* BOT (Trái) - Xám nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
@@ -40,32 +30,33 @@ st.markdown("""
     
     /* USER (Phải) - Xanh Zalo Nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #E5F3FF; 
+        background-color: #E5F3FF;
         border: 1px solid #CDE8FF;
         flex-direction: row-reverse;
         text-align: right;
     }
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { 
-        margin-left: 10px; margin-right: 0;
-    }
-
-    /* Link màu Xanh Đậm (Dễ đọc) */
-    .stChatMessage a { color: #005792 !important; font-weight: 700; text-decoration: none; }
-    .stChatMessage a:hover { text-decoration: underline; }
     
-    /* 4. Thanh Nhập liệu & Nút Đính kèm */
+    /* Link */
+    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
+    
+    /* === THANH CÔNG CỤ ĐÍNH KÈM (POPOVER) === */
+    /* Biến nút bấm thành icon ghim gọn gàng */
+    button[kind="secondary"] {
+        border: none; 
+        background-color: transparent !important; 
+        color: #555; 
+        font-size: 24px; 
+        padding: 0px 10px;
+        margin-bottom: -10px; /* Đẩy sát xuống ô nhập liệu */
+    }
+    button[kind="secondary"]:hover { color: #0068C9; }
+    
+    /* Ô nhập liệu */
     .stTextInput input { 
         background-color: #F0F2F5 !important; 
         color: #000000 !important; 
-        border: 1px solid #CCCCCC;
-        border-radius: 25px;
-    }
-    
-    /* Nút Expander (Đính kèm) */
-    .streamlit-expanderHeader {
-        color: #005792 !important; /* Màu xanh thương hiệu */
-        font-weight: bold;
-        background-color: transparent;
+        border-radius: 25px; 
+        border: 1px solid #ddd; 
     }
     
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
@@ -136,36 +127,25 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 """
 # --- 6. GIAO DIỆN CHÍNH ---
 
-# === HEADER (LOGO & TÊN) ===
-# Căn giữa và làm nổi bật
-col_logo, col_text = st.columns([1, 6])
-with col_logo:
-    st.image(BOT_AVATAR, width=70)
-with col_text:
-    st.subheader("BV-Atlas Marketing")
-    st.caption("Trợ lý tra cứu Tài liệu & Hình ảnh")
+# Header
+col1, col2 = st.columns([1, 8])
+with col1: st.image(BOT_AVATAR, width=50)
+with col2: st.subheader("BV-Atlas Marketing")
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ (Thêm trường 'type')
+# 1. KHỞI TẠO LỊCH SỬ
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì hôm nay?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
     ]
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT
-for i, msg in enumerate(st.session_state.messages):
+# 2. HIỂN THỊ LỊCH SỬ CHAT (Đã bỏ nút Like/Dislike)
+for msg in st.session_state.messages:
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
-            # Feedback Buttons
-            if i > 0 and msg.get("type") == "text":
-                c1, c2, c3 = st.columns([0.5, 0.5, 8])
-                with c1: 
-                    if st.button("👍", key=f"up_{i}"): st.toast("Đã thích!")
-                with c2: 
-                    if st.button("👎", key=f"down_{i}"): st.toast("Đã ghi nhận!")
     else:
         with st.chat_message(msg["role"], avatar="👤"):
             if msg.get("type") == "image":
@@ -173,19 +153,31 @@ for i, msg in enumerate(st.session_state.messages):
             else:
                 st.markdown(msg["content"])
 
-# 3. KHU VỰC ĐÍNH KÈM (EXPANDER GỌN GÀNG)
-# Tôi dùng st.expander với icon cái ghim để giống Zalo nhất có thể
-with st.expander("📎 Đính kèm ảnh (Nhấn để mở)", expanded=False):
-    uploaded_file = st.file_uploader("Chọn ảnh từ máy...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
-    current_img_data = None
-    if uploaded_file:
-        current_img_data = Image.open(uploaded_file)
-        st.image(current_img_data, width=150)
-        st.success("✅ Ảnh đã sẵn sàng! Hãy nhập câu hỏi bên dưới.")
+# 3. THANH CÔNG CỤ ĐÍNH KÈM (Toolbar sát đáy)
+# Tạo layout 2 cột: Cột trái là icon Ghim, Cột phải để trống (hoặc để text trạng thái)
+col_tool_1, col_tool_2 = st.columns([0.5, 9.5])
 
-# 4. Ô NHẬP LIỆU
+with col_tool_1:
+    # Nút bấm nhỏ hình cái ghim
+    with st.popover("📎", help="Đính kèm ảnh"):
+        st.markdown("##### Chọn ảnh")
+        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
+        
+        # Biến tạm để lưu ảnh vừa chọn
+        current_img_data = None
+        if uploaded_file:
+            current_img_data = Image.open(uploaded_file)
+            st.image(current_img_data, width=150)
+            st.success("Đã chọn!")
+
+# Hiện thông báo nhỏ nếu đã chọn ảnh (ở cột bên cạnh cho gọn)
+with col_tool_2:
+    if current_img_data:
+        st.caption(f"✅ Đã đính kèm 1 ảnh. Nhập câu hỏi bên dưới để gửi.")
+
+# 4. Ô NHẬP LIỆU (Chat Input)
 if prompt := st.chat_input("Nhập câu hỏi..."):
-    # Xử lý gửi ảnh
+    # Xử lý gửi ảnh trước (nếu có)
     if current_img_data:
         st.session_state.messages.append({"role": "user", "type": "image", "content": current_img_data})
         with st.chat_message("user", avatar="👤"):
@@ -221,6 +213,7 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
+                # Rerun để reset lại trạng thái upload (làm sạch icon ghim cho lần sau)
                 st.rerun()
                 
             except Exception as e:
