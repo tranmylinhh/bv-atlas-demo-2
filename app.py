@@ -22,7 +22,7 @@ st.markdown("""
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
-    model = genai.GenerativeModel('gemini-2.5-pro-preview-03-25')
+    model = genai.GenerativeModel('gemini-1.5-flash')
 else:
     st.error("⚠️ Lỗi: Chưa kết nối API Key. Vui lòng báo Admin.")
     st.stop()
