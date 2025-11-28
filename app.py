@@ -11,55 +11,72 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN ĐẸP) ---
+import streamlit as st
+import google.generativeai as genai
+from PIL import Image
+import docx
+import os
+from datetime import datetime
+
+# --- 1. CẤU HÌNH TRANG ---
+st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="wide")
+
+# --- CẤU HÌNH AVATAR ---
+BOT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bao_Viet_Holdings_Logo.svg/512px-Bao_Viet_Holdings_Logo.svg.png"
+
+# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN YÊU CẦU) ---
 st.markdown("""
 <style>
-    /* 1. Nền tổng thể Trắng */
+    /* 1. Cấu hình Nền & Chữ chung */
     .stApp { 
         background-color: #FFFFFF; 
         color: #000000; 
     }
     
-    /* 2. Bong bóng chat USER (Màu Đen - Chữ Trắng) - Giống ảnh bạn gửi */
+    /* 2. Bong bóng chat USER (Trắng + Viền Xám + Chữ Đen) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #000000; 
-        color: #FFFFFF !important;
-        border-radius: 20px 20px 0px 20px; /* Bo góc tròn trịa */
+        background-color: #FFFFFF; 
+        border: 1px solid #E0E0E0; /* Viền xám nhẹ */
+        border-radius: 20px 20px 0px 20px;
         padding: 15px;
-        border: none;
-    }
-    /* Fix màu chữ trong bong bóng User sang trắng */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) p {
-        color: #FFFFFF !important;
+        color: #000000 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Đổ bóng nhẹ cho nổi */
     }
     
-    /* 3. Bong bóng chat BOT (Xám Nhạt - Chữ Đen) */
+    /* 3. Bong bóng chat BOT (Xám Nhạt + Chữ Đen) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #F2F4F6; /* Xám rất nhạt sang trọng */
-        color: #000000 !important;
+        background-color: #F2F4F6; /* Xám nhạt chuẩn chat app */
+        border: none;
         border-radius: 20px 20px 20px 0px;
         padding: 15px;
-        border: none;
+        color: #000000 !important;
     }
-    
-    /* 4. Link màu Xanh (Blue) nổi bật */
+
+    /* 4. Ép màu chữ trong bong bóng chat thành ĐEN tuyệt đối */
+    .stChatMessage p, .stChatMessage li, .stChatMessage h1, .stChatMessage h2, .stChatMessage h3 {
+        color: #000000 !important;
+    }
+
+    /* 5. Link màu Xanh (Blue) chuẩn Marketing */
     .stChatMessage a {
-        color: #0068C9 !important; /* Xanh chuẩn link */
-        font-weight: 600; /* In đậm nhẹ */
+        color: #0068C9 !important;
+        font-weight: 600;
         text-decoration: none;
     }
     .stChatMessage a:hover {
         text-decoration: underline;
     }
 
-    /* 5. Tinh chỉnh Sidebar và Input */
+    /* 6. Tinh chỉnh Sidebar và Input cho đồng bộ */
     section[data-testid="stSidebar"] {
-        background-color: #F8F9FA; /* Sidebar xám nhẹ */
+        background-color: #F8F9FA;
+        border-right: 1px solid #E0E0E0;
     }
     .stTextInput input {
-        background-color: #F0F2F6;
-        color: black;
-        border-radius: 10px;
+        background-color: #FFFFFF;
+        color: #000000;
+        border: 1px solid #E0E0E0;
+        border-radius: 20px;
     }
     
     /* Ẩn Header/Footer thừa */
