@@ -24,61 +24,67 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (STYLE MESSENGER/ZALO) ---
+# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN YÊU CẦU) ---
 st.markdown("""
 <style>
-    /* Nền tổng thể */
-    .stApp { background-color: #FFFFFF; color: #000000; }
-    
-    /* === CẤU HÌNH CHUNG CHO BONG BÓNG CHAT === */
-    .stChatMessage {
-        padding: 1rem;
-        border-radius: 15px;
-        margin-bottom: 1rem;
-        display: flex;
+    /* 1. Cấu hình Nền & Chữ chung */
+    .stApp { 
+        background-color: #FFFFFF; 
+        color: #000000; 
     }
-
-    /* === 1. BONG BÓNG BOT (BÊN TRÁI) - CÁC DÒNG LẺ (1, 3, 5...) === */
-    /* Bot nói trước -> Bot là số lẻ */
+    
+    /* 2. Bong bóng chat USER (Trắng + Viền Xám + Chữ Đen) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        flex-direction: row; /* Avatar bên trái */
-        background-color: #F2F4F6; /* Nền xám nhạt */
-        border: none;
-        color: #000000;
-        text-align: left;
-    }
-
-    /* === 2. BONG BÓNG USER (BÊN PHẢI) - CÁC DÒNG CHẴN (2, 4, 6...) === */
-    /* User trả lời sau -> User là số chẵn */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        flex-direction: row-reverse; /* ĐẢO NGƯỢC: Avatar sang phải */
-        background-color: #EBF7FF; /* Nền xanh nhạt (giống Zalo/Messenger) cho User */
-        border: 1px solid #Cceeff;
-        color: #000000;
-        text-align: right; /* Căn lề phải text bên trong */
+        background-color: #FFFFFF; 
+        border: 1px solid #E0E0E0; /* Viền xám nhẹ */
+        border-radius: 20px 20px 0px 20px;
+        padding: 15px;
+        color: #000000 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Đổ bóng nhẹ cho nổi */
     }
     
-    /* Chỉnh lại vị trí nội dung User cho đẹp khi đảo chiều */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div {
-        margin-right: 10px;
-        margin-left: 0px;
-        align-items: flex-end; /* Đẩy nội dung sang phải */
+    /* 3. Bong bóng chat BOT (Xám Nhạt + Chữ Đen) */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
+        background-color: #F2F4F6; /* Xám nhạt chuẩn chat app */
+        border: none;
+        border-radius: 20px 20px 20px 0px;
+        padding: 15px;
+        color: #000000 !important;
     }
 
-    /* Link màu xanh đậm */
-    .stChatMessage a { color: #0068C9 !important; font-weight: 600; text-decoration: none; }
-    .stChatMessage a:hover { text-decoration: underline; }
+    /* 4. Ép màu chữ trong bong bóng chat thành ĐEN tuyệt đối */
+    .stChatMessage p, .stChatMessage li, .stChatMessage h1, .stChatMessage h2, .stChatMessage h3 {
+        color: #000000 !important;
+    }
 
-    /* Ẩn Header/Footer */
+    /* 5. Link màu Xanh (Blue) chuẩn Marketing */
+    .stChatMessage a {
+        color: #0068C9 !important;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .stChatMessage a:hover {
+        text-decoration: underline;
+    }
+
+    /* 6. Tinh chỉnh Sidebar và Input cho đồng bộ */
+    section[data-testid="stSidebar"] {
+        background-color: #F8F9FA;
+        border-right: 1px solid #E0E0E0;
+    }
+    .stTextInput input {
+        background-color: #FFFFFF;
+        color: #000000;
+        border: 1px solid #E0E0E0;
+        border-radius: 20px;
+    }
+    
+    /* Ẩn Header/Footer thừa */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Chỉnh Sidebar */
-    section[data-testid="stSidebar"] { background-color: #F8F9FA; border-right: 1px solid #E0E0E0; }
 </style>
 """, unsafe_allow_html=True)
-
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
