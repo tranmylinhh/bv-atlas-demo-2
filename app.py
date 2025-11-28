@@ -13,7 +13,88 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
+# --- 2. CSS GIAO DIỆN (CUSTOM CAO CẤP) ---
+st.markdown("""
+<style>
+    /* Nền trắng */
+    .stApp { background-color: #FFFFFF; color: #000000; }
+    
+    /* === HEADER (LOGO & TÊN) === */
+    /* Căn giữa tiêu đề và logo */
+    [data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
+    
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px; /* Cách xa khung chat */
+    }
+    .header-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #005792;
+        margin-top: 10px;
+    }
+    
+    /* === BONG BÓNG CHAT === */
+    .stChatMessage { 
+        padding: 12px 18px; 
+        border-radius: 20px; 
+        margin-bottom: 8px; 
+        display: flex; 
+        color: #000000 !important;
+        font-size: 15px;
+    }
+    
+    /* BOT (Trái) */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #F5F7FA; 
+        border: none; 
+        flex-direction: row;
+    }
+    
+    /* USER (Phải) */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
+        background-color: #E5F3FF; /* Xanh da trời nhạt */
+        border: 1px solid #D6EAF8;
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { 
+        margin-left: 10px; margin-right: 0; display: flex; flex-direction: column; align-items: flex-end;
+    }
 
+    /* Link */
+    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
+    
+    /* === THANH NHẬP LIỆU (ZALO STYLE) === */
+    /* Đẩy vị trí lên trên một chút */
+    .stChatInput {
+        padding-bottom: 20px !important;
+    }
+    
+    /* Đổi màu ô nhập thành Xanh Nhạt */
+    .stChatInput textarea {
+        background-color: #F0F8FF !important; /* Màu xanh rất nhạt */
+        color: #003366 !important; /* Chữ xanh đen */
+        border: 2px solid #0075C9 !important; /* Viền xanh Bảo Việt */
+        border-radius: 30px !important; /* Bo tròn viên thuốc */
+    }
+    
+    /* Nút Gửi (Icon máy bay) */
+    .stChatInput button {
+        color: #0075C9 !important;
+    }
+
+    /* Nút Đính kèm (Popover) */
+    button[kind="secondary"] {
+        border: none; background-color: transparent; color: #0075C9; font-size: 24px; padding: 0px;
+    }
+    
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
 
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
