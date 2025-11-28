@@ -91,7 +91,7 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
             with st.spinner("Đang suy nghĩ..."):
                 try:
                     # Model Flash (Bản ổn định nhất)
-                    model = genai.GenerativeModel('gemini-1.5-pro')
+                    model = genai.GenerativeModel('gemini-pro')
                     
                     # Ghep Prompt
                     parts = []
