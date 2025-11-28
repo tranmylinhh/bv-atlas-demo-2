@@ -13,83 +13,59 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (CUSTOM CAO CẤP) ---
+# --- 2. CSS GIAO DIỆN (FIX MÀU ĐEN TUYỆT ĐỐI) ---
 st.markdown("""
 <style>
-    /* Nền trắng */
+    /* 1. Nền & Chữ chung */
     .stApp { background-color: #FFFFFF; color: #000000; }
     
-    /* === HEADER (LOGO & TÊN) === */
-    /* Căn giữa tiêu đề và logo */
-    [data-testid="stHeader"] { background-color: rgba(0,0,0,0); }
-    
-    .header-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 30px; /* Cách xa khung chat */
+    /* 2. Tiêu đề Header (Fix lỗi tàng hình) */
+    h1, h2, h3 { color: #000000 !important; }
+    .stCaption { color: #555555 !important; }
+
+    /* 3. Bong bóng chat */
+    .stChatMessage {
+        padding: 15px; border-radius: 18px; margin-bottom: 5px; 
+        display: flex; color: #000000 !important;
     }
-    .header-title {
-        font-size: 28px;
-        font-weight: 800;
-        color: #005792;
-        margin-top: 10px;
+    /* Ép mọi chữ bên trong thành màu đen */
+    .stChatMessage p, .stChatMessage li, .stChatMessage div { 
+        color: #000000 !important; 
     }
-    
-    /* === BONG BÓNG CHAT === */
-    .stChatMessage { 
-        padding: 12px 18px; 
-        border-radius: 20px; 
-        margin-bottom: 8px; 
-        display: flex; 
-        color: #000000 !important;
-        font-size: 15px;
-    }
-    
-    /* BOT (Trái) */
+
+    /* BOT (Trái) - Xám nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #F5F7FA; 
-        border: none; 
-        flex-direction: row;
+        background-color: #F2F4F6; border: none; flex-direction: row;
     }
     
-    /* USER (Phải) */
+    /* USER (Phải) - Xanh Zalo Nhạt */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #E5F3FF; /* Xanh da trời nhạt */
-        border: 1px solid #D6EAF8;
+        background-color: #E5F3FF; 
+        border: 1px solid #CDE8FF;
         flex-direction: row-reverse;
         text-align: right;
     }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { 
-        margin-left: 10px; margin-right: 0; display: flex; flex-direction: column; align-items: flex-end;
+        margin-left: 10px; margin-right: 0;
     }
 
-    /* Link */
-    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
+    /* Link màu Xanh Đậm (Dễ đọc) */
+    .stChatMessage a { color: #005792 !important; font-weight: 700; text-decoration: none; }
+    .stChatMessage a:hover { text-decoration: underline; }
     
-    /* === THANH NHẬP LIỆU (ZALO STYLE) === */
-    /* Đẩy vị trí lên trên một chút */
-    .stChatInput {
-        padding-bottom: 20px !important;
+    /* 4. Thanh Nhập liệu & Nút Đính kèm */
+    .stTextInput input { 
+        background-color: #F0F2F5 !important; 
+        color: #000000 !important; 
+        border: 1px solid #CCCCCC;
+        border-radius: 25px;
     }
     
-    /* Đổi màu ô nhập thành Xanh Nhạt */
-    .stChatInput textarea {
-        background-color: #F0F8FF !important; /* Màu xanh rất nhạt */
-        color: #003366 !important; /* Chữ xanh đen */
-        border: 2px solid #0075C9 !important; /* Viền xanh Bảo Việt */
-        border-radius: 30px !important; /* Bo tròn viên thuốc */
-    }
-    
-    /* Nút Gửi (Icon máy bay) */
-    .stChatInput button {
-        color: #0075C9 !important;
-    }
-
-    /* Nút Đính kèm (Popover) */
-    button[kind="secondary"] {
-        border: none; background-color: transparent; color: #0075C9; font-size: 24px; padding: 0px;
+    /* Nút Expander (Đính kèm) */
+    .streamlit-expanderHeader {
+        color: #005792 !important; /* Màu xanh thương hiệu */
+        font-weight: bold;
+        background-color: transparent;
     }
     
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
