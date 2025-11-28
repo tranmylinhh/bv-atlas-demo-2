@@ -9,21 +9,17 @@ from datetime import datetime
 st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="wide")
 
 # --- CẤU HÌNH AVATAR ---
-# Link ảnh Logo Bảo Việt (Dùng làm Avatar cho Bot)
 BOT_AVATAR = "logo.jpg"
 
 # --- 2. CSS GIAO DIỆN ---
 st.markdown("""
 <style>
     .stApp { background-color: #0E1117; color: #FAFAFA; }
-    
-    /* Chat User */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
         background-color: #005792; 
         border-radius: 15px 15px 0px 15px;
         padding: 15px;
     }
-    /* Chat Bot */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
         background-color: #262730; 
         border-radius: 15px 15px 15px 0px;
@@ -62,8 +58,7 @@ def load_knowledge_base():
 
 KNOWLEDGE_TEXT = load_knowledge_base()
 
-# --- 5. SYSTEM PROMPT (CÓ NHẬN THỨC THỜI GIAN) ---
-# Lấy ngày hôm nay
+# --- 5. SYSTEM PROMPT (UPDATE LOGIC PHÂN BIỆT DỊCH VỤ vs CTKM) ---
 current_date = datetime.now().strftime("%d/%m/%Y")
 
 SYSTEM_PROMPT = f"""
@@ -71,31 +66,32 @@ VAI TRÒ:
 Bạn là BV-Atlas, trợ lý AI của Ban Marketing Bảo Việt.
 Avatar của bạn là Logo Bảo Việt.
 
-THÔNG TIN THỜI GIAN THỰC TẾ:
-- Hôm nay là ngày: {current_date}
-- Nhiệm vụ của bạn là SO SÁNH ngày hôm nay với "Thời gian" của các chương trình trong dữ liệu.
+THÔNG TIN THỜI GIAN: Hôm nay là {current_date}.
 
-QUY TẮC XỬ LÝ KHUYẾN MÃI (QUAN TRỌNG):
-1. KIỂM TRA HẠN: 
-   - Nếu (Ngày kết thúc < Hôm nay) -> Chương trình ĐÃ HẾT HẠN.
-   - Nếu (Ngày kết thúc >= Hôm nay) -> Chương trình ĐANG CHẠY.
-2. KHI USER HỎI "ĐANG CHẠY":
-   - TUYỆT ĐỐI KHÔNG kể tên các chương trình đã hết hạn.
-   - Chỉ liệt kê các chương trình còn hiệu lực.
-3. KHI USER HỎI VỀ CHƯƠNG TRÌNH CŨ:
-   - Thông báo rõ: "Chương trình này đã kết thúc vào ngày [Ngày kết thúc] rồi bạn nhé."
+QUY TẮC NGHIỆP VỤ (BẮT BUỘC TUÂN THỦ):
 
-PHONG CÁCH:
-- Thân thiện, xưng "Mình" - "Bạn".
-- Dùng emoji 😊, 📎.
-- Luôn gợi ý thêm thông tin sau khi trả lời.
+1. PHÂN BIỆT "CHƯƠNG TRÌNH KHUYẾN MÃI" (CTKM) VÀ "DỊCH VỤ":
+   - CTKM: Là các chương trình CÓ THỜI HẠN (Từ ngày... đến ngày...) và có ƯU ĐÃI cụ thể (Tặng quà, Giảm phí, Quay số).
+   - DỊCH VỤ/TIỆN ÍCH: Là các quyền lợi mặc định (Ví dụ: Bảo lãnh viện phí, Bồi thường, Tổng đài...). Đây KHÔNG PHẢI là chương trình khuyến mãi.
+   => Khi user hỏi "CTKM đang chạy", TUYỆT ĐỐI KHÔNG liệt kê các Dịch vụ/Tiện ích vào.
+
+2. KIỂM TRA HIỆU LỰC CTKM:
+   - Chỉ liệt kê các CTKM mà: Ngày kết thúc >= {current_date}.
+   - Các CTKM đã quá hạn: KHÔNG được liệt kê vào danh sách đang chạy.
+
+3. PHONG CÁCH TRẢ LỜI:
+   - Thân thiện, dùng emoji 😊.
+   - Nếu tìm thấy CTKM, hãy trình bày rõ: Tên chương trình, Thời gian, và Quà tặng.
+   - Luôn gợi ý thêm ở cuối câu.
+
+4. NẾU KHÔNG CÓ THÔNG TIN:
+   - Hướng dẫn liên hệ Ms. Linh (Ban Marketing).
 """
 
 # --- 6. GIAO DIỆN CHÍNH ---
 
 # === SIDEBAR ===
 with st.sidebar:
-    # Logo trên Sidebar
     st.image(BOT_AVATAR, width=150)
     st.markdown("---")
     st.markdown("### 📸 Tra cứu Ảnh")
@@ -110,17 +106,16 @@ with st.sidebar:
 st.title("🛡️ BV-Atlas: Marketing Assistant")
 
 if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Chưa tìm thấy file `Du_lieu_BV_Atlas.docx`.")
+    st.warning("⚠️ Admin chưa upload file `Du_lieu_BV_Atlas.docx` lên GitHub.")
 
-# 1. Khởi tạo lịch sử
+# Khởi tạo lịch sử
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay ({current_date}), bạn cần tra cứu thông tin gì về sản phẩm hay các CTKM đang chạy không?"}
     ]
 
-# 2. Hiển thị lịch sử
+# Hiển thị lịch sử
 for msg in st.session_state.messages:
-    # Logic Avatar: Nếu là Bot thì dùng Link Logo, nếu là User thì dùng icon người
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
@@ -128,7 +123,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"], avatar="👤"):
             st.markdown(msg["content"])
 
-# 3. Ô Nhập liệu
+# Ô Nhập liệu
 if prompt := st.chat_input("Nhập câu hỏi..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="👤"):
@@ -137,7 +132,7 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("Đang tra cứu..."):
             try:
-                # Tạo bộ nhớ hội thoại
+                # Tạo bộ nhớ
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
                     role_name = "User" if msg["role"] == "user" else "BV-Atlas"
