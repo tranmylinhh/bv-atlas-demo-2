@@ -141,7 +141,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
     ]
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT (Đã bỏ nút Like/Dislike)
+# 2. HIỂN THỊ LỊCH SỬ CHAT
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
@@ -153,24 +153,21 @@ for msg in st.session_state.messages:
             else:
                 st.markdown(msg["content"])
 
-# 3. THANH CÔNG CỤ ĐÍNH KÈM (Toolbar sát đáy)
-# Tạo layout 2 cột: Cột trái là icon Ghim, Cột phải để trống (hoặc để text trạng thái)
+# 3. THANH CÔNG CỤ ĐÍNH KÈM
 col_tool_1, col_tool_2 = st.columns([0.5, 9.5])
 
 with col_tool_1:
-    # Nút bấm nhỏ hình cái ghim
     with st.popover("📎", help="Đính kèm ảnh"):
         st.markdown("##### Chọn ảnh")
+        # QUAN TRỌNG: key="uploader" là chìa khóa để reset
         uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
         
-        # Biến tạm để lưu ảnh vừa chọn
         current_img_data = None
         if uploaded_file:
             current_img_data = Image.open(uploaded_file)
             st.image(current_img_data, width=150)
             st.success("Đã chọn!")
 
-# Hiện thông báo nhỏ nếu đã chọn ảnh (ở cột bên cạnh cho gọn)
 with col_tool_2:
     if current_img_data:
         st.caption(f"✅ Đã đính kèm 1 ảnh. Nhập câu hỏi bên dưới để gửi.")
@@ -213,7 +210,14 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
-                # Rerun để reset lại trạng thái upload (làm sạch icon ghim cho lần sau)
+                
+                # --- ĐOẠN CODE QUAN TRỌNG MỚI THÊM ---
+                # Xóa trạng thái của nút upload sau khi đã xử lý xong
+                if "uploader" in st.session_state:
+                    st.session_state["uploader"] = None
+                # -------------------------------------
+
+                # Rerun để giao diện cập nhật lại (ảnh ghim sẽ biến mất)
                 st.rerun()
                 
             except Exception as e:
