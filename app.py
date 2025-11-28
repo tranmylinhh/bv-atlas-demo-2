@@ -4,92 +4,106 @@ from PIL import Image
 import docx
 import os
 
-st.set_page_config(page_title="BV-Atlas Debug", page_icon="🔧", layout="wide")
+# --- 1. CẤU HÌNH TRANG ---
+st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="🛡️", layout="wide")
 
-# --- CSS ---
-st.markdown("""<style>.stApp { background-color: #0E1117; color: #FAFAFA; }</style>""", unsafe_allow_html=True)
+# --- 2. CSS GIAO DIỆN ---
+st.markdown("""
+<style>
+    .stApp { background-color: #0E1117; color: #FAFAFA; }
+    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {
+        background-color: #262730; padding: 20px; border-radius: 10px;
+    }
+    h1 { color: #4F8BF9 !important; }
+</style>
+""", unsafe_allow_html=True)
 
-# --- SIDEBAR: KHU VỰC TEST MODEL ---
-with st.sidebar:
-    st.title("🔧 BẢNG ĐIỀU KHIỂN")
+# --- 3. KẾT NỐI API KEY ---
+if 'GOOGLE_API_KEY' in st.secrets:
+    genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
     
-    # 1. Nhập Key
-    if 'GOOGLE_API_KEY' in st.secrets:
-        api_key = st.secrets['GOOGLE_API_KEY']
-        st.success("✅ Đã nhận API Key")
-    else:
-        api_key = st.text_input("Nhập API Key:", type="password")
+    # --- SỬA ĐỔI QUAN TRỌNG: DÙNG MODEL CÓ TRONG DANH SÁCH CỦA BẠN ---
+    # Dùng đúng tên ở vị trí số 6 trong ảnh bạn gửi
+    model = genai.GenerativeModel('gemini-2.0-flash') 
+else:
+    st.error("⚠️ Chưa nhập API Key trong Secrets!")
+    st.stop()
 
-    st.divider()
-    
-    # 2. MENU CHỌN MODEL ĐỂ TEST
-    st.markdown("### 🧪 Test Model")
-    selected_model = st.selectbox(
-        "Chọn model muốn thử:",
-        [
-            "gemini-pro",           # Bản 1.0 ổn định nhất
-            "gemini-1.5-flash",     # Bản mới nhanh nhất
-            "gemini-1.5-pro",       # Bản mới thông minh nhất
-            "gemini-1.0-pro"        # Bản cũ dự phòng
-        ]
-    )
-    
-    # Nút bấm kiểm tra
-    if st.button("🔴 BẤM ĐỂ KIỂM TRA KẾT NỐI"):
-        if not api_key:
-            st.error("Chưa có Key!")
-        else:
-            try:
-                genai.configure(api_key=api_key)
-                test_model = genai.GenerativeModel(selected_model)
-                response = test_model.generate_content("Xin chào, bạn có hoạt động không?")
-                st.success(f"✅ THÀNH CÔNG! Model {selected_model} hoạt động tốt.")
-                st.info(f"Trả lời: {response.text}")
-            except Exception as e:
-                st.error(f"❌ THẤT BẠI: {e}")
-
-# --- PHẦN CHÍNH: CHATBOT (Sử dụng model đã chọn bên trái) ---
-st.title(f"🛡️ BV-Atlas (Đang chạy: {selected_model})")
-
-# Logic đọc file (Giữ nguyên)
+# --- 4. HÀM ĐỌC DỮ LIỆU TỪ GITHUB ---
 @st.cache_resource
 def load_knowledge_base():
     file_path = "Du_lieu_BV_Atlas.docx"
     if not os.path.exists(file_path): return None
     try:
         doc = docx.Document(file_path)
-        text = []
-        for para in doc.paragraphs: text.append(para.text)
-        return '\n'.join(text)
-    except: return None
+        full_text = []
+        for para in doc.paragraphs:
+            if para.text.strip(): full_text.append(para.text)
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = [cell.text for cell in row.cells]
+                full_text.append(" | ".join(row_text))
+        return '\n'.join(full_text)
+    except Exception as e: return f"Lỗi đọc file: {e}"
 
-KNOWLEDGE = load_knowledge_base()
+KNOWLEDGE_TEXT = load_knowledge_base()
 
-# Logic Chat
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Mình là BV-Atlas. Hãy chọn Model bên trái để test thử nhé!"}]
+# --- 5. SYSTEM PROMPT ---
+SYSTEM_PROMPT = """
+VAI TRÒ: Bạn là BV-Atlas, trợ lý AI chuyên nghiệp của Ban Marketing Bảo Việt.
+NHIỆM VỤ: Trả lời câu hỏi dựa trên DỮ LIỆU ĐƯỢC CUNG CẤP.
+QUY TẮC:
+1. Nếu User hỏi tài liệu/link: Lấy link chính xác trong dữ liệu gửi cho họ.
+2. Nếu User hỏi Khuyến mãi: Tóm tắt Thời gian, Đối tượng, Quà tặng.
+3. Nếu không có thông tin: Trả lời "Hiện tại mình chưa có thông tin này, vui lòng liên hệ Ms. Linh (Ban Marketing)."
+"""
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]): st.markdown(msg["content"])
+# --- 6. GIAO DIỆN CHÍNH ---
+st.title("🛡️ BV-Atlas: Marketing Assistant")
 
-if prompt := st.chat_input("Nhập câu hỏi..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"): st.markdown(prompt)
+col_chat, col_img = st.columns([2, 1])
 
-    with st.chat_message("assistant"):
-        try:
-            # CẤU HÌNH THEO LỰA CHỌN CỦA BẠN
-            genai.configure(api_key=api_key)
-            active_model = genai.GenerativeModel(selected_model)
-            
-            # Gửi tin nhắn
-            if KNOWLEDGE:
-                full_prompt = f"Dữ liệu:\n{KNOWLEDGE}\n\nCâu hỏi: {prompt}"
-            else:
-                full_prompt = prompt
-                
-            response = active_model.generate_content(full_prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error(f"Lỗi: {e}")
+# CỘT PHẢI: VISUAL SEARCH
+with col_img:
+    st.subheader("🖼️ Phân tích Ảnh")
+    st.info("Upload Poster/Banner để hỏi thông tin.")
+    uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'])
+    img_data = None
+    if uploaded_img:
+        img_data = Image.open(uploaded_img)
+        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
+
+# CỘT TRÁI: CHATBOT
+with col_chat:
+    if KNOWLEDGE_TEXT is None:
+        st.warning("⚠️ Chưa tìm thấy file `Du_lieu_BV_Atlas.docx`. Hãy upload lên GitHub!")
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "assistant", "content": "Chào bạn! Mình là BV-Atlas. Mình đã học xong dữ liệu về An Gia, Tâm Bình và các CTKM. Bạn cần hỗ trợ gì không?"}]
+
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"], avatar="🛡️" if msg["role"]=="assistant" else "👤"):
+            st.markdown(msg["content"])
+
+    if prompt := st.chat_input("Nhập câu hỏi..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user", avatar="👤"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant", avatar="🛡️"):
+            with st.spinner("Đang tra cứu..."):
+                try:
+                    final_prompt = [f"{SYSTEM_PROMPT}\n\n=== DỮ LIỆU ===\n{KNOWLEDGE_TEXT}\n\nCÂU HỎI: {prompt}"]
+                    
+                    if img_data:
+                        final_prompt.append("User gửi kèm ảnh. Hãy phân tích ảnh này.")
+                        final_prompt.append(img_data)
+                    
+                    # Gọi Model
+                    response = model.generate_content(final_prompt)
+                    
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
