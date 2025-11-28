@@ -109,3 +109,15 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                     st.session_state.messages.append({"role": "assistant", "content": response.text})
                 except Exception as e:
                     st.error(f"Lỗi: {e}")
+
+# --- ĐOẠN CODE KIỂM TRA (DEBUG) ---
+with st.sidebar:
+    st.divider()
+    st.warning("🔍 ĐANG KIỂM TRA KẾT NỐI...")
+    try:
+        models = list(genai.list_models())
+        found_models = [m.name for m in models if 'generateContent' in m.supported_generation_methods]
+        st.success(f"✅ Tìm thấy {len(found_models)} model!")
+        st.json(found_models) # Nó sẽ hiện danh sách tên model chính xác ra đây
+    except Exception as e:
+        st.error(f"❌ Lỗi Key: {e}")
