@@ -13,7 +13,7 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
---- 2. CSS GIAO DIỆN (TỐI GIẢN - CLEAN UI) ---
+# --- 2. CSS GIAO DIỆN (TỐI GIẢN - CLEAN UI) ---
 st.markdown("""
 <style>
     /* Nền trắng */
