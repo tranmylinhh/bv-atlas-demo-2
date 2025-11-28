@@ -13,53 +13,7 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (TRẮNG TINH KHÔI & TỐI GIẢN) ---
-st.markdown("""
-<style>
-    /* Nền trắng toàn bộ */
-    .stApp { background-color: #FFFFFF; color: #000000; }
-    
-    /* === BONG BÓNG CHAT === */
-    .stChatMessage { padding: 10px 15px; border-radius: 18px; margin-bottom: 5px; display: flex; color: #000000 !important; }
-    .stChatMessage p, .stChatMessage li { color: #000000 !important; margin-bottom: 0px; }
 
-    /* BOT (Trái) - Xám nhạt */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #F2F4F6; border: none; flex-direction: row;
-    }
-    
-    /* USER (Phải) - Xanh Zalo Nhạt */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #E5F3FF; /* Màu xanh nhạt dễ chịu */
-        border: 1px solid #CDE8FF;
-        flex-direction: row-reverse;
-        text-align: right;
-    }
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { margin-left: 10px; margin-right: 0; }
-
-    /* Link */
-    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
-    
-    /* === THANH NHẬP LIỆU & NÚT ĐÍNH KÈM === */
-    /* Làm đẹp nút Popover (Cái ghim) */
-    button[kind="secondary"] {
-        border: none;
-        background-color: transparent;
-        color: #555;
-        font-size: 20px;
-        padding: 0px;
-    }
-    button[kind="secondary"]:hover {
-        color: #0068C9;
-        background-color: transparent;
-    }
-    
-    /* Ô nhập liệu */
-    .stTextInput input { background-color: #FFFFFF !important; color: #000000 !important; border-radius: 20px; border: 1px solid #ddd; }
-    
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
 
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
@@ -125,26 +79,29 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 """
 # --- 6. GIAO DIỆN CHÍNH ---
 
-# Tiêu đề tối giản
-col1, col2 = st.columns([1, 8])
-with col1: st.image(BOT_AVATAR, width=50)
-with col2: st.subheader("BV-Atlas Marketing")
+# === HEADER (LOGO & TÊN Ở GIỮA) ===
+# Sử dụng HTML để căn giữa tuyệt đối
+st.markdown(f"""
+    <div class="header-container">
+        <img src="{BOT_AVATAR}" width="80">
+        <div class="header-title">BV-Atlas Marketing</div>
+    </div>
+""", unsafe_allow_html=True)
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ (Thêm trường 'type' để phân loại tin nhắn)
+# 1. KHỞI TẠO LỊCH SỬ
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay bạn cần tìm tài liệu hay check khuyến mãi gì?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
     ]
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT (CẬP NHẬT LOGIC HIỂN THỊ ẢNH)
+# 2. HIỂN THỊ LỊCH SỬ CHAT
 for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
-            # Nút Feedback
             if i > 0 and msg.get("type") == "text":
                 c1, c2, c3 = st.columns([0.5, 0.5, 8])
                 with c1: 
@@ -152,51 +109,42 @@ for i, msg in enumerate(st.session_state.messages):
                 with c2: 
                     if st.button("👎", key=f"down_{i}"): st.toast("Đã ghi nhận!")
     else:
-        # Tin nhắn User
         with st.chat_message(msg["role"], avatar="👤"):
-            # Kiểm tra loại tin nhắn
             if msg.get("type") == "image":
-                # Nếu là ảnh thì hiển thị ảnh
                 st.image(msg["content"], width=200)
             else:
-                # Nếu là text thì hiển thị text
                 st.markdown(msg["content"])
 
 # 3. KHU VỰC NHẬP LIỆU & ĐÍNH KÈM
 col_attach, col_space = st.columns([1, 5])
 with col_attach:
+    # Nút Popover ghim ảnh (Nằm ngay trên ô nhập)
     with st.popover("📎", help="Đính kèm ảnh"):
         st.markdown("### Chọn ảnh")
         uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
-        
-        # Xử lý ảnh upload ngay tại đây để dùng cho phần gửi bên dưới
         current_img_data = None
         if uploaded_file:
             current_img_data = Image.open(uploaded_file)
             st.image(current_img_data, width=150)
-            st.success("Đã chọn! Hãy nhập câu hỏi và nhấn Enter.")
+            st.success("Đã chọn!")
 
-# 4. XỬ LÝ KHI USER GỬI TIN NHẮN (QUAN TRỌNG NHẤT)
-if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
-    
-    # BƯỚC 1: Kiểm tra xem có ảnh đang chờ gửi không
+# 4. XỬ LÝ KHI USER GỬI TIN
+if prompt := st.chat_input("Nhập câu hỏi..."):
+    # Xử lý gửi ảnh
     if current_img_data:
-        # Nếu có, thêm ảnh vào lịch sử trước
         st.session_state.messages.append({"role": "user", "type": "image", "content": current_img_data})
-        # Hiển thị ngay lập tức
         with st.chat_message("user", avatar="👤"):
             st.image(current_img_data, width=200)
             
-    # BƯỚC 2: Thêm tin nhắn chữ vào lịch sử
+    # Xử lý gửi chữ
     st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-    # BƯỚC 3: Gửi cho Bot xử lý
+    # Bot trả lời
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("..."):
             try:
-                # Lấy lịch sử (chỉ lấy phần text để đưa vào prompt)
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
                     if msg.get("type") == "text":
@@ -210,19 +158,14 @@ if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
                     f"CÂU HỎI USER: {prompt}"
                 ]
                 
-                # Nếu vừa gửi kèm ảnh thì đưa ảnh vào prompt cho Bot nhìn
                 if current_img_data:
-                    final_prompt.append("LƯU Ý: User vừa gửi một bức ảnh (đã hiển thị trong lịch sử). Hãy phân tích ảnh đó.")
+                    final_prompt.append("LƯU Ý: User vừa gửi ảnh. Hãy phân tích.")
                     final_prompt.append(current_img_data)
                 
                 response = model.generate_content(final_prompt)
                 
-                # Hiển thị câu trả lời của Bot
                 st.markdown(response.text)
-                # Lưu câu trả lời vào lịch sử
                 st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
-                
-                # Rerun để cập nhật giao diện và reset uploader nếu cần
                 st.rerun()
                 
             except Exception as e:
