@@ -2,176 +2,130 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 import docx
+import os
 
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="🛡️", layout="wide")
 
-# --- 2. CSS GIAO DIỆN (Dark Mode & Card Style) ---
+# --- 2. CSS GIAO DIỆN (Dark Mode & Professional) ---
 st.markdown("""
 <style>
     .stApp { background-color: #0E1117; color: #FAFAFA; }
-    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] {
-        background-color: #262730; padding: 20px; border-radius: 10px;
-        border: 1px solid #363945;
-    }
-    h1 { color: #4F8BF9 !important; }
-    .stButton>button { width: 100%; border-radius: 8px; }
+    /* Bong bóng chat */
+    .stChatMessage { background-color: #262730; border-radius: 10px; padding: 10px; margin-bottom: 10px;}
+    /* Ẩn icon github mặc định */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
-    api_key = st.secrets['GOOGLE_API_KEY']
-    genai.configure(api_key=api_key)
-    # Dùng model chuẩn, ổn định
+    genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
     model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    st.error("⚠️ Chưa nhập API Key trong Secrets!")
+    st.error("⚠️ Lỗi: Chưa kết nối API Key. Vui lòng báo Admin.")
     st.stop()
 
-# --- 4. HỆ THỐNG NHẮC VIỆC (SYSTEM INSTRUCTION) ---
-# Đây là phần "Tính cách" và "Luật lệ" bạn đã quy định
+# --- 4. HÀM ĐỌC DỮ LIỆU TỪ HỆ THỐNG (GITHUB) ---
+@st.cache_resource # Giúp load 1 lần dùng mãi mãi, không load lại gây chậm
+def load_knowledge_base():
+    file_path = "Du_lieu_BV_Atlas.docx" # Tên file bạn đã up lên GitHub
+    
+    if not os.path.exists(file_path):
+        return None # Không tìm thấy file
+        
+    try:
+        doc = docx.Document(file_path)
+        full_text = []
+        # Đọc văn bản
+        for para in doc.paragraphs:
+            if para.text.strip():
+                full_text.append(para.text)
+        # Đọc bảng biểu (Table)
+        for table in doc.tables:
+            for row in table.rows:
+                row_text = [cell.text for cell in row.cells]
+                full_text.append(" | ".join(row_text))
+        return '\n'.join(full_text)
+    except Exception as e:
+        return f"Lỗi đọc file: {e}"
+
+# Tự động nạp dữ liệu ngay khi mở App
+KNOWLEDGE_TEXT = load_knowledge_base()
+
+# --- 5. SYSTEM PROMPT ---
 SYSTEM_PROMPT = """
-Bạn là BV-Atlas, trợ lý AI nội bộ thân thiện và chuyên nghiệp của Ban Marketing - Bảo hiểm Bảo Việt.
-Nhiệm vụ của bạn là hỗ trợ đồng nghiệp tra cứu thông tin Sản phẩm và Chương trình Khuyến mại (CTKM).
+VAI TRÒ: Bạn là BV-Atlas, trợ lý AI chuyên nghiệp của Ban Marketing Bảo Việt.
+NHIỆM VỤ: Trả lời câu hỏi dựa trên DỮ LIỆU ĐƯỢC CUNG CẤP bên dưới.
 
-PHONG CÁCH TRÒ CHUYỆN (TONE & VOICE):
-- Thân thiện, cởi mở, sử dụng ngôn ngữ tự nhiên (Ví dụ: "Chào bạn", "Để mình tìm giúp bạn nhé", "Dưới đây là thông tin bạn cần...").
-- Tránh trả lời cộc lốc hoặc quá máy móc.
-- Xưng hô: "Mình" (hoặc "BV-Atlas") và "Bạn".
-
-NGUYÊN TẮC ỨNG XỬ (BẮT BUỘC):
-1. KHI CHÀO HỎI / HỎI CHUNG CHUNG:
-   - Tuyệt đối KHÔNG liệt kê danh sách toàn bộ tài liệu ngay từ đầu.
-   - Hãy hỏi ngược lại để làm rõ nhu cầu.
-   - Ví dụ: "Chào bạn! Kho tài liệu của mình có rất nhiều thông tin về An Gia, Tâm Bình và các CTKM mới. Bạn đang cần tìm cụ thể cho sản phẩm nào không?"
-
-2. KHI HỎI VỀ TÀI LIỆU/LINK TẢI:
-   - CHỈ cung cấp link tải của ĐÚNG sản phẩm mà người dùng hỏi.
-   - Luôn kèm theo một câu dẫn dắt. (Ví dụ: "Đây là brochure An Gia bản mới nhất cho bạn nhé: [Link]").
-
-3. KHI HỎI VỀ CHƯƠNG TRÌNH KHUYẾN MẠI (PROMOTION):
-   - Dựa vào tài liệu đã học, hãy tóm tắt rõ 3 ý chính:
-     + Thời gian diễn ra.
-     + Đối tượng áp dụng.
-     + Quà tặng/Ưu đãi cụ thể.
-   - Nếu có file Thể lệ chi tiết, hãy gửi link tải ở cuối câu.
-
-4. KHI TÌM HÌNH ẢNH / VISUAL SEARCH:
-   - Nếu người dùng mô tả ảnh: Hãy tìm trong dữ liệu xem có mô tả nào khớp không và trả về Link file thiết kế gốc.
-   - Nếu người dùng UPLOAD ẢNH:
-     + Bước 1: Phân tích nội dung bức ảnh vừa upload (chữ trên ảnh, hình ảnh).
-     + Bước 2: Dùng thông tin đó đối chiếu với Kho kiến thức để tìm ra tên chương trình hoặc Link tải file gốc tương ứng.
-
-5. XỬ LÝ KHI KHÔNG CÓ THÔNG TIN:
-   - Nếu không tìm thấy thông tin trong Knowledge Base, hãy trả lời khéo léo và hướng dẫn liên hệ:
-   "Xin lỗi bạn, hiện tại mình chưa tìm thấy thông tin này trong kho dữ liệu. Bạn vui lòng liên hệ trực tiếp Ban Marketing để được hỗ trợ nhé.
-   Đầu mối hỗ trợ từ ban Marketing:
-   TRẦN MỸ LINH - tran.my.linh@baoviet.com.vn
-   Ban Marketing - Tầng 6 - Số 8 Lê Thái Tổ - Hoàn Kiếm - HN."
+QUY TẮC:
+1. Nếu User hỏi tài liệu/link: Lấy link chính xác trong dữ liệu gửi cho họ.
+2. Nếu User hỏi Khuyến mãi: Tóm tắt Thời gian, Đối tượng, Quà tặng.
+3. Nếu không có thông tin trong dữ liệu: Trả lời "Hiện tại mình chưa có thông tin này, vui lòng liên hệ Ms. Linh (Ban Marketing)."
+4. Thái độ: Thân thiện, xưng hô "Mình" - "Bạn".
 """
 
-# --- 5. HÀM ĐỌC FILE WORD ---
-def read_docx(file):
-    doc = docx.Document(file)
-    full_text = []
-    # Đọc văn bản thường
-    for para in doc.paragraphs:
-        if para.text.strip():
-            full_text.append(para.text)
-    # Đọc bảng biểu (Table) - Rất quan trọng cho bảo hiểm
-    for table in doc.tables:
-        for row in table.rows:
-            row_text = [cell.text for cell in row.cells]
-            full_text.append(" | ".join(row_text))
-    return '\n'.join(full_text)
+# --- 6. GIAO DIỆN NGƯỜI DÙNG (USER UI) ---
 
-# --- 6. GIAO DIỆN CHÍNH ---
-st.title("🛡️ BV-Atlas: Marketing Assistant")
-st.caption("Trợ lý tra cứu Tài liệu, Sản phẩm & Khuyến mãi")
-st.markdown("---")
-
-col_chat, col_upload = st.columns([2, 1])
-
-# --- CỘT PHẢI: KHU VỰC NẠP DỮ LIỆU ---
-with col_upload:
-    st.subheader("📂 Nạp Kiến Thức")
-    st.info("💡 Upload file Word chứa thông tin Sản phẩm & CTKM để Bot học.")
-    
-    # Upload File Knowledge
-    uploaded_file = st.file_uploader("Chọn file dữ liệu (.docx)", type=['docx'])
-    knowledge_text = ""
-    
-    if uploaded_file:
-        with st.spinner("Đang học tài liệu..."):
-            try:
-                knowledge_text = read_docx(uploaded_file)
-                st.success(f"✅ Đã học xong: {uploaded_file.name}")
-                with st.expander("Xem nội dung đã học"):
-                    st.text(knowledge_text[:1000] + "...") 
-            except Exception as e:
-                st.error(f"Lỗi đọc file: {e}")
-
+# SIDEBAR: Chỉ để User upload ảnh (Visual Search)
+with st.sidebar:
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bao_Viet_Holdings_Logo.svg/1200px-Bao_Viet_Holdings_Logo.svg.png", width=180)
     st.markdown("---")
-    st.subheader("🖼️ Visual Search")
-    st.info("Upload Poster/Banner để hỏi thông tin.")
-    uploaded_img = st.file_uploader("Chọn ảnh (.jpg, .png)", type=['jpg', 'png', 'jpeg'])
+    st.markdown("### 📸 Tìm kiếm bằng Ảnh")
+    st.info("Upload Poster/Banner CTKM để hỏi chi tiết.")
+    uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'])
+    
     img_data = None
     if uploaded_img:
         img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
+        st.image(img_data, caption="Ảnh bạn vừa tải lên", use_container_width=True)
 
-# --- CỘT TRÁI: KHUNG CHAT ---
-with col_chat:
-    # Khởi tạo lịch sử chat
+# MAIN SCREEN: Chatbot
+st.title("🛡️ BV-Atlas: Marketing Assistant")
+
+# Kiểm tra dữ liệu nạp thành công chưa
+if KNOWLEDGE_TEXT is None:
+    st.error("🚨 CẢNH BÁO ADMIN: Chưa tìm thấy file `Du_lieu_BV_Atlas.docx` trên hệ thống. Vui lòng upload lên GitHub.")
+elif "Lỗi đọc file" in KNOWLEDGE_TEXT:
+    st.error(f"🚨 CẢNH BÁO ADMIN: {KNOWLEDGE_TEXT}")
+else:
+    # Nếu dữ liệu OK thì hiện Chat
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "assistant", "content": "Chào bạn! Mình là BV-Atlas. Bạn cần tìm thông tin gì về An Gia, Tâm Bình hay các CTKM mới không?"}]
+        st.session_state.messages = [{"role": "assistant", "content": "Chào bạn! Mình là BV-Atlas. Mình đã học xong các tài liệu về An Gia, Tâm Bình và CTKM mới nhất. Bạn cần hỗ trợ gì không?"}]
 
-    # Hiển thị tin nhắn cũ
+    # Hiện lịch sử chat
     for msg in st.session_state.messages:
         avatar = "🛡️" if msg["role"] == "assistant" else "👤"
         with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
 
-    # Xử lý nhập liệu
-    if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia, Khuyến mãi tháng này)"):
-        # 1. Hiện câu hỏi User
+    # Xử lý câu hỏi
+    if prompt := st.chat_input("Nhập câu hỏi... (VD: Gửi link tờ rơi An Gia)"):
+        # 1. Hiện câu hỏi user
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user", avatar="👤"):
             st.markdown(prompt)
 
-        # 2. Xử lý Trả lời
-        # Kiểm tra xem đã có dữ liệu chưa
-        if not knowledge_text and not img_data:
-            response_text = "⚠️ **Bạn chưa upload file dữ liệu (Word) bên cột phải.**\nHãy upload file `Du_lieu_BV_Atlas.docx` để mình có kiến thức trả lời nhé!"
-            st.session_state.messages.append({"role": "assistant", "content": response_text})
-            with st.chat_message("assistant", avatar="🛡️"):
-                st.markdown(response_text)
-        else:
-            # Gọi Google Gemini
-            with st.chat_message("assistant", avatar="🛡️"):
-                with st.spinner("Đang tra cứu..."):
-                    try:
-                        # Ghép Prompt gửi cho Gemini
-                        final_prompt = [f"{SYSTEM_PROMPT}\n\n=== DỮ LIỆU KIẾN THỨC NỀN TẢNG ===\n{knowledge_text}\n=================================="]
-                        
-                        if img_data:
-                            final_prompt.append("Người dùng gửi kèm ảnh. Hãy phân tích ảnh này dựa trên Kiến thức nền tảng.")
-                            final_prompt.append(img_data)
-                        
-                        final_prompt.append(f"\nCÂU HỎI CỦA NGƯỜI DÙNG: {prompt}")
-                        
-                        # Gọi API
-                        response = model.generate_content(final_prompt)
-                        
-                        # Hiện kết quả
-                        st.markdown(response.text)
-                        st.session_state.messages.append({"role": "assistant", "content": response.text})
-                        
-                        # Nút Feedback (Giả lập)
-                        c1, c2 = st.columns([1,10])
-                        with c1: st.button("👍")
-                        with c2: st.button("👎")
-                        
-                    except Exception as e:
-                        st.error(f"Có lỗi xảy ra: {e}")
+        # 2. Xử lý trả lời
+        with st.chat_message("assistant", avatar="🛡️"):
+            with st.spinner("Đang tra cứu dữ liệu nội bộ..."):
+                try:
+                    # Ghép Prompt
+                    final_prompt = [f"{SYSTEM_PROMPT}\n\n=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n"]
+                    
+                    if img_data:
+                        final_prompt.append("User gửi kèm ảnh. Hãy phân tích ảnh này dựa trên Dữ liệu nội bộ.")
+                        final_prompt.append(img_data)
+                    
+                    final_prompt.append(f"\nCÂU HỎI USER: {prompt}")
+                    
+                    # Gọi Gemini
+                    response = model.generate_content(final_prompt)
+                    
+                    # Hiện kết quả
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+                    
+                except Exception as e:
+                    st.error(f"Lỗi kết nối: {e}")
