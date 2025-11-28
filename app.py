@@ -135,32 +135,30 @@ with col2: st.subheader("BV-Atlas Marketing")
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ
+# Khởi tạo Session State
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
-    ]
+    st.session_state.messages = [{"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}]
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = str(uuid.uuid4())
+
+# Hiển thị lịch sử
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
-        with st.chat_message(msg["role"], avatar=BOT_AVATAR):
-            st.markdown(msg["content"])
+        with st.chat_message(msg["role"], avatar=BOT_AVATAR): st.markdown(msg["content"])
     else:
         with st.chat_message(msg["role"], avatar="👤"):
-            if msg.get("type") == "image":
-                st.image(msg["content"], width=200)
-            else:
-                st.markdown(msg["content"])
+            if msg.get("type") == "image": st.image(msg["content"], width=200)
+            else: st.markdown(msg["content"])
 
-# 3. THANH CÔNG CỤ ĐÍNH KÈM
-col_tool_1, col_tool_2 = st.columns([0.5, 9.5])
+# --- TOOLBAR & INPUT ---
+col_attach, col_space = st.columns([0.5, 9.5])
 
-with col_tool_1:
+with col_attach:
     with st.popover("📎", help="Đính kèm ảnh"):
         st.markdown("##### Chọn ảnh")
-        # QUAN TRỌNG: key="uploader" là chìa khóa để reset
-        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
+        # Sử dụng key động (uploader_key) để reset được
+        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key=st.session_state.uploader_key)
         
         current_img_data = None
         if uploaded_file:
@@ -168,24 +166,21 @@ with col_tool_1:
             st.image(current_img_data, width=150)
             st.success("Đã chọn!")
 
-with col_tool_2:
+with col_space:
     if current_img_data:
-        st.caption(f"✅ Đã đính kèm 1 ảnh. Nhập câu hỏi bên dưới để gửi.")
+        st.caption(f"✅ Đã đính kèm ảnh. Nhập câu hỏi để gửi.")
 
-# 4. Ô NHẬP LIỆU (Chat Input)
 if prompt := st.chat_input("Nhập câu hỏi..."):
-    # Xử lý gửi ảnh trước (nếu có)
+    # 1. Xử lý ảnh
     if current_img_data:
         st.session_state.messages.append({"role": "user", "type": "image", "content": current_img_data})
-        with st.chat_message("user", avatar="👤"):
-            st.image(current_img_data, width=200)
+        with st.chat_message("user", avatar="👤"): st.image(current_img_data, width=200)
             
-    # Xử lý gửi chữ
+    # 2. Xử lý chữ
     st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(prompt)
+    with st.chat_message("user", avatar="👤"): st.markdown(prompt)
 
-    # Bot trả lời
+    # 3. Bot trả lời
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("..."):
             try:
@@ -195,15 +190,10 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                         role_name = "User" if msg["role"] == "user" else "BV-Atlas"
                         history_text += f"{role_name}: {msg['content']}\n"
 
-                final_prompt = [
-                    f"{SYSTEM_PROMPT}\n",
-                    f"=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n",
-                    f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
-                    f"CÂU HỎI USER: {prompt}"
-                ]
+                final_prompt = [f"{SYSTEM_PROMPT}\n", f"=== DỮ LIỆU ===\n{KNOWLEDGE_TEXT}\n", f"=== LỊCH SỬ ===\n{history_text}\n", f"CÂU HỎI: {prompt}"]
                 
                 if current_img_data:
-                    final_prompt.append("LƯU Ý: User vừa gửi ảnh. Hãy phân tích.")
+                    final_prompt.append("User gửi ảnh. Hãy phân tích.")
                     final_prompt.append(current_img_data)
                 
                 response = model.generate_content(final_prompt)
@@ -211,13 +201,9 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
                 
-                # --- ĐOẠN CODE QUAN TRỌNG MỚI THÊM ---
-                # Xóa trạng thái của nút upload sau khi đã xử lý xong
-                if "uploader" in st.session_state:
-                    st.session_state["uploader"] = None
-                # -------------------------------------
-
-                # Rerun để giao diện cập nhật lại (ảnh ghim sẽ biến mất)
+                # --- RESET NÚT UPLOAD (CÁCH CHUẨN) ---
+                # Đổi key sang một ID mới -> Streamlit sẽ tạo nút upload mới tinh (trống rỗng)
+                st.session_state.uploader_key = str(uuid.uuid4())
                 st.rerun()
                 
             except Exception as e:
