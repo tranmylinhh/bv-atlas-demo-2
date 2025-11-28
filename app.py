@@ -10,7 +10,7 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 
 # --- CẤU HÌNH AVATAR ---
 # Link ảnh Logo Bảo Việt (Dùng làm Avatar cho Bot)
-BOT_AVATAR = "https://baovietonline.com.vn/uploads/docs/352738028_987932448869631_4777725660236690124_n.jpg"
+BOT_AVATAR = "logo.jpg"
 
 # --- 2. CSS GIAO DIỆN ---
 st.markdown("""
