@@ -6,22 +6,28 @@ import os
 from datetime import datetime
 
 # --- 1. CẤU HÌNH TRANG ---
-st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="wide")
+st.set_page_config(page_title="BV-Atlas: Ban Marketing", page_icon="img/favicon.png", layout="wide")
 
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN ---
+# --- 2. CSS GIAO DIỆN (GIỮ NGUYÊN STYLE DARK MODE SANG TRỌNG) ---
 st.markdown("""
 <style>
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #005792; border-radius: 15px 15px 0px 15px; padding: 15px;
+        background-color: #005792; 
+        border-radius: 15px 15px 0px 15px;
+        padding: 15px;
     }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #262730; border-radius: 15px 15px 15px 0px; padding: 15px; border: 1px solid #444;
+        background-color: #262730; 
+        border-radius: 15px 15px 15px 0px;
+        padding: 15px;
+        border: 1px solid #444;
     }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -30,7 +36,7 @@ if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
     model = genai.GenerativeModel('gemini-2.0-flash')
 else:
-    st.error("⚠️ Chưa nhập API Key.")
+    st.error("⚠️ Chưa nhập API Key trong Secrets!")
     st.stop()
 
 # --- 4. HÀM ĐỌC DỮ LIỆU ---
@@ -52,66 +58,99 @@ def load_knowledge_base():
 
 KNOWLEDGE_TEXT = load_knowledge_base()
 
-# --- 5. SYSTEM PROMPT (THẮT CHẶT QUY TẮC SẢN PHẨM) ---
+# --- 5. SYSTEM PROMPT (TỐI ƯU GIỌNG ĐIỆU MARKETING) ---
 current_date = datetime.now().strftime("%d/%m/%Y")
 
 SYSTEM_PROMPT = f"""
 VAI TRÒ:
-Bạn là BV-Atlas, trợ lý AI của Ban Marketing Bảo Việt.
+Bạn là BV-Atlas, đại diện ảo của Ban Marketing - Bảo hiểm Bảo Việt.
+Sứ mệnh của bạn là hỗ trợ các anh chị em đồng nghiệp kinh doanh và nghiệp vụ tra cứu thông tin nhanh chóng, chính xác.
+
 THÔNG TIN THỜI GIAN: Hôm nay là {current_date}.
 
-QUY TẮC NGHIỆP VỤ (BẮT BUỘC TUÂN THỦ TUYỆT ĐỐI):
+PHONG CÁCH GIAO TIẾP (TONE & VOICE):
+- Chuyên nghiệp nhưng Thân thiện: Sử dụng ngôn ngữ chuẩn mực của môi trường công sở, nhưng không cứng nhắc.
+- Xưng hô: "Mình" (BV-Atlas) và "Bạn" (hoặc Anh/Chị).
+- Thái độ: Nhiệt tình, luôn sẵn sàng hỗ trợ. Dùng emoji 😊, 📎, 🛡️ một cách tinh tế.
 
-1. KIỂM TRA HẠN:
-   - Chỉ liệt kê các CTKM mà: Ngày kết thúc >= {current_date}.
-   - Các CTKM đã quá hạn: Coi như KHÔNG TỒN TẠI trong danh sách đang chạy.
+QUY TẮC NGHIỆP VỤ (BẮT BUỘC):
 
-2. ĐÚNG ĐỐI TƯỢNG SẢN PHẨM (QUAN TRỌNG NHẤT):
-   - Nếu User hỏi CTKM của sản phẩm A (VD: An Gia), CHỈ tìm CTKM áp dụng cho sản phẩm A.
-   - Nếu sản phẩm A không có CTKM nào đang chạy -> Trả lời thẳng thắn: "Hiện tại sản phẩm [Tên SP] chưa có chương trình khuyến mãi nào đang diễn ra."
-   - TUYỆT ĐỐI KHÔNG lấy CTKM của sản phẩm B (VD: Flexi) để trả lời cho sản phẩm A. (Flexi là Du lịch, An Gia là Sức khỏe -> Không liên quan).
+1. KIỂM TRA HẠN KHUYẾN MÃI:
+   - Chỉ liệt kê các CTKM có (Ngày kết thúc >= {current_date}).
+   - Nếu chương trình đã hết hạn, hãy thông báo rõ ràng để tránh gây hiểu lầm.
 
-3. PHÂN BIỆT DỊCH VỤ vs KHUYẾN MÃI:
-   - "Bảo lãnh viện phí", "Bồi thường" là DỊCH VỤ. Không được liệt kê vào danh sách Khuyến mãi.
+2. ĐÚNG SẢN PHẨM:
+   - User hỏi sản phẩm nào -> Trả lời đúng sản phẩm đó.
+   - Tuyệt đối KHÔNG lấy CTKM của sản phẩm Du lịch (Flexi) để trả lời cho Sức khỏe (An Gia). Nếu An Gia không có khuyến mãi, hãy nói thẳng là "Hiện chưa có".
 
-4. PHONG CÁCH:
-   - Thân thiện, dùng emoji 😊.
-   - Nếu không có CTKM, hãy gợi ý user xem quyền lợi hoặc biểu phí của sản phẩm đó thay thế.
+3. PHÂN BIỆT DỊCH VỤ:
+   - "Bảo lãnh viện phí", "Bồi thường" là Tiện ích dịch vụ, KHÔNG PHẢI là chương trình khuyến mãi.
+
+4. CẤU TRÚC TRẢ LỜI (ĐỂ TỐI ƯU TRẢI NGHIỆM):
+   - Bước 1: Đi thẳng vào vấn đề (Cung cấp Link hoặc Thông tin ngay).
+   - Bước 2: Tóm tắt ngắn gọn nội dung (nếu là link).
+   - Bước 3: Gợi ý mở rộng (Proactive Suggestion).
+     *Ví dụ:* "Dưới đây là link tải Brochure An Gia 2025 nhé: [Link]. 👉 Bạn có muốn mình gửi thêm **Danh sách bệnh viện bảo lãnh** hay **Biểu phí chi tiết** không?"
+
+5. XỬ LÝ KHI THIẾU THÔNG TIN:
+   - "Dạ, thông tin này hiện chưa có trong kho dữ liệu của BV-Atlas. Bạn vui lòng liên hệ trực tiếp đầu mối Ban Marketing để được hỗ trợ chi tiết nhé:
+   TRẦN MỸ LINH - tran.my.linh@baoviet.com.vn"
 """
 
 # --- 6. GIAO DIỆN CHÍNH ---
 
+# === SIDEBAR ===
 with st.sidebar:
     st.image(BOT_AVATAR, width=150)
     st.markdown("---")
     st.markdown("### 📸 Tra cứu Ảnh")
+    st.info("Upload Poster/Banner để tìm thông tin chiến dịch.")
     uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
+    
     img_data = None
     if uploaded_img:
         img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
+        st.image(img_data, caption="Ảnh bạn vừa tải lên", use_container_width=True)
 
+# === MAIN ===
 st.title("🛡️ BV-Atlas: Marketing Assistant")
 
 if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Admin chưa upload file `Du_lieu_BV_Atlas.docx` lên GitHub.")
+    st.warning("⚠️ Cảnh báo Admin: Chưa tìm thấy file `Du_lieu_BV_Atlas.docx` trên GitHub.")
 
+# 1. LỜI CHÀO MỞ ĐẦU (ĐƯỢC VIẾT LẠI THÂN THIỆN HƠN)
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Hôm nay ({current_date}), bạn cần tra cứu thông tin gì?"}]
+    welcome_msg = (
+        f"Xin chào! 👋 **Mình là BV-Atlas - Trợ lý ảo của Ban Marketing Bảo Việt.**\n\n"
+        f"Mình ở đây để hỗ trợ bạn tra cứu nhanh các thông tin:\n"
+        f"- 📄 **Tài liệu sản phẩm** (Brochure, Quy tắc, Biểu phí...)\n"
+        f"- 🎁 **Chương trình Khuyến mãi** (Đang chạy)\n"
+        f"- 🖼️ **Hình ảnh truyền thông & Thương hiệu**\n\n"
+        f"Bạn cần mình hỗ trợ thông tin gì cho chiến dịch hôm nay không? 😊"
+    )
+    st.session_state.messages = [{"role": "assistant", "content": welcome_msg}]
 
+# 2. HIỂN THỊ LỊCH SỬ CHAT
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
-        with st.chat_message(msg["role"], avatar=BOT_AVATAR): st.markdown(msg["content"])
+        with st.chat_message(msg["role"], avatar=BOT_AVATAR):
+            st.markdown(msg["content"])
     else:
-        with st.chat_message(msg["role"], avatar="👤"): st.markdown(msg["content"])
+        with st.chat_message(msg["role"], avatar="👤"):
+            st.markdown(msg["content"])
 
-if prompt := st.chat_input("Nhập câu hỏi..."):
+# 3. XỬ LÝ HỘI THOẠI
+if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia, Khuyến mãi du lịch)"):
+    # User
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="👤"): st.markdown(prompt)
+    with st.chat_message("user", avatar="👤"):
+        st.markdown(prompt)
 
+    # Bot
     with st.chat_message("assistant", avatar=BOT_AVATAR):
-        with st.spinner("Đang tra cứu..."):
+        with st.spinner("BV-Atlas đang tra cứu dữ liệu..."):
             try:
+                # Tạo bộ nhớ (Context Window)
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
                     role_name = "User" if msg["role"] == "user" else "BV-Atlas"
@@ -119,13 +158,13 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
 
                 final_prompt = [
                     f"{SYSTEM_PROMPT}\n",
-                    f"=== DỮ LIỆU ===\n{KNOWLEDGE_TEXT}\n",
-                    f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
-                    f"CÂU HỎI USER: {prompt}"
+                    f"=== DỮ LIỆU NỘI BỘ (Word) ===\n{KNOWLEDGE_TEXT}\n",
+                    f"=== LỊCH SỬ HỘI THOẠI ===\n{history_text}\n",
+                    f"CÂU HỎI MỚI CỦA USER: {prompt}"
                 ]
                 
                 if img_data:
-                    final_prompt.append("User gửi ảnh. Hãy phân tích ảnh này.")
+                    final_prompt.append("User gửi ảnh. Hãy phân tích ảnh này theo dữ liệu Marketing.")
                     final_prompt.append(img_data)
                 
                 response = model.generate_content(final_prompt)
