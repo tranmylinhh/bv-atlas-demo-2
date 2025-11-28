@@ -11,17 +11,61 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN ---
+# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN ĐẸP) ---
 st.markdown("""
 <style>
-    .stApp { background-color: #0E1117; color: #FAFAFA; }
+    /* 1. Nền tổng thể Trắng */
+    .stApp { 
+        background-color: #FFFFFF; 
+        color: #000000; 
+    }
+    
+    /* 2. Bong bóng chat USER (Màu Đen - Chữ Trắng) - Giống ảnh bạn gửi */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #005792; border-radius: 15px 15px 0px 15px; padding: 15px;
+        background-color: #000000; 
+        color: #FFFFFF !important;
+        border-radius: 20px 20px 0px 20px; /* Bo góc tròn trịa */
+        padding: 15px;
+        border: none;
     }
+    /* Fix màu chữ trong bong bóng User sang trắng */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) p {
+        color: #FFFFFF !important;
+    }
+    
+    /* 3. Bong bóng chat BOT (Xám Nhạt - Chữ Đen) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #262730; border-radius: 15px 15px 15px 0px; padding: 15px; border: 1px solid #444;
+        background-color: #F2F4F6; /* Xám rất nhạt sang trọng */
+        color: #000000 !important;
+        border-radius: 20px 20px 20px 0px;
+        padding: 15px;
+        border: none;
     }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
+    
+    /* 4. Link màu Xanh (Blue) nổi bật */
+    .stChatMessage a {
+        color: #0068C9 !important; /* Xanh chuẩn link */
+        font-weight: 600; /* In đậm nhẹ */
+        text-decoration: none;
+    }
+    .stChatMessage a:hover {
+        text-decoration: underline;
+    }
+
+    /* 5. Tinh chỉnh Sidebar và Input */
+    section[data-testid="stSidebar"] {
+        background-color: #F8F9FA; /* Sidebar xám nhẹ */
+    }
+    .stTextInput input {
+        background-color: #F0F2F6;
+        color: black;
+        border-radius: 10px;
+    }
+    
+    /* Ẩn Header/Footer thừa */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
