@@ -117,4 +117,41 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
 
 # 3. Ô Nhập liệu & Xử lý Logic
-if prompt := st.chat_input("Nhập câu hỏi...
+if prompt := st.chat_input("Nhập câu hỏi..."):
+    # Hiện câu hỏi user
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user", avatar="👤"):
+        st.markdown(prompt)
+
+    # Xử lý trả lời
+    with st.chat_message("assistant", avatar="🛡️"):
+        with st.spinner("Đang tra cứu..."):
+            try:
+                # --- TẠO BỘ NHỚ (MEMORY) ---
+                history_text = ""
+                for msg in st.session_state.messages[-5:]: 
+                    role_name = "User" if msg["role"] == "user" else "BV-Atlas"
+                    history_text += f"{role_name}: {msg['content']}\n"
+
+                # Ghép Prompt
+                final_prompt = [
+                    f"{SYSTEM_PROMPT}\n",
+                    f"=== DỮ LIỆU KIẾN THỨC ===\n{KNOWLEDGE_TEXT}\n",
+                    f"=== LỊCH SỬ CHAT (ĐỂ HIỂU NGỮ CẢNH) ===\n{history_text}\n",
+                    f"CÂU HỎI MỚI NHẤT CỦA USER: {prompt}"
+                ]
+                
+                # Nếu có ảnh
+                if img_data:
+                    final_prompt.append("User gửi kèm ảnh. Hãy phân tích ảnh này dựa trên Dữ liệu.")
+                    final_prompt.append(img_data)
+                
+                # Gọi Gemini
+                response = model.generate_content(final_prompt)
+                
+                # Hiện kết quả
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+                
+            except Exception as e:
+                st.error(f"Lỗi: {e}")
