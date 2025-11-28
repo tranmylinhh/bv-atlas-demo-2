@@ -7,26 +7,25 @@ import os
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="🛡️", layout="wide")
 
-# --- 2. CSS GIAO DIỆN (Tinh chỉnh cho giống Chat App thật) ---
+# --- 2. CSS GIAO DIỆN (Chat App Chuẩn) ---
 st.markdown("""
 <style>
-    /* Nền tối sang trọng */
+    /* Nền tối */
     .stApp { background-color: #0E1117; color: #FAFAFA; }
     
     /* Bong bóng chat User */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #262730; 
+        background-color: #1E252B; 
         border-radius: 15px;
-        padding: 15px;
+        border: 1px solid #444;
     }
     /* Bong bóng chat Bot */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #1E1E2E; 
-        border-radius: 15px; 
-        padding: 15px;
+        background-color: #262730; 
+        border-radius: 15px;
         border: 1px solid #363945;
     }
-    /* Ẩn menu mặc định */
+    /* Ẩn menu */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 </style>
@@ -35,8 +34,12 @@ st.markdown("""
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
-    # Dùng model ổn định nhất
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    
+    # === SỬA LỖI TẠI ĐÂY ===
+    # Dùng bản 002 (Bản mới nhất của dòng Flash ổn định)
+    # Nó khắc phục được lỗi 404 của bản 001 và lỗi 429 của bản 2.0
+    model = genai.GenerativeModel('gemini-1.5-flash-002')
+    
 else:
     st.error("⚠️ Chưa nhập API Key trong Secrets!")
     st.stop()
@@ -60,40 +63,38 @@ def load_knowledge_base():
 
 KNOWLEDGE_TEXT = load_knowledge_base()
 
-# --- 5. SYSTEM PROMPT (NHÂN CÁCH HÓA) ---
+# --- 5. SYSTEM PROMPT (Thân thiện & Human) ---
 SYSTEM_PROMPT = """
 VAI TRÒ:
-Bạn là BV-Atlas, một trợ lý AI trẻ trung, nhiệt tình và chuyên nghiệp của Ban Marketing Bảo Việt.
-Bạn đang nói chuyện với đồng nghiệp trong công ty.
+Bạn là BV-Atlas, trợ lý AI trẻ trung, nhiệt tình của Ban Marketing Bảo Việt.
 
-PHONG CÁCH GIAO TIẾP (QUAN TRỌNG):
-- Xưng hô: "Mình" (hoặc BV-Atlas) và "Bạn" (hoặc Anh/Chị nếu người dùng xưng hô trước).
-- Giọng điệu: Tự nhiên, cởi mở, như người thật. Dùng các từ đệm nhẹ nhàng (nhé, ạ, đây ạ...).
-- Cảm xúc: Sử dụng Emoji 😊, 🛡️, 📎 một cách tinh tế để cuộc hội thoại sinh động hơn.
+PHONG CÁCH:
+- Xưng hô: "Mình" (BV-Atlas) và "Bạn".
+- Giọng điệu: Tự nhiên, dùng emoji 😊, 🛡️, 📎. Tránh máy móc.
 
-QUY TẮC TRẢ LỜI:
-1. KHI CHÀO HỎI: Đừng liệt kê tài liệu ngay. Hãy chào thân thiện: "Chào bạn! 👋 Mình là BV-Atlas. Hôm nay bạn cần tìm thông tin gì về An Gia, Tâm Bình hay các chương trình khuyến mãi mới không?"
-2. KHI HỎI LINK TẢI: "Gửi bạn link tải brochure An Gia nhé: [Link] 📎" (Đi thẳng vào vấn đề).
-3. KHI HỎI KHUYẾN MẠI: Tóm tắt ngắn gọn 3 ý chính (Thời gian, Đối tượng, Quà) rồi hỏi lại: "Bạn có cần thêm thể lệ chi tiết không?"
-4. NẾU KHÔNG BIẾT: "Ui, thông tin này hiện tại chưa được cập nhật trong hệ thống của mình rồi 😅. Bạn vui lòng liên hệ trực tiếp Ms. Linh (Ban Marketing) để được hỗ trợ nhanh nhất nhé!"
+QUY TẮC:
+1. KHI CHÀO: "Chào bạn! 👋 Mình là BV-Atlas đây. Hôm nay mình có thể giúp gì cho bạn nè? (Tìm tài liệu, check khuyến mãi, hay tìm ảnh?)"
+2. KHI HỎI LINK: "Gửi bạn link tải brochure An Gia nhé: [Link] 📎" (Đi thẳng vào vấn đề).
+3. KHI HỎI KHUYẾN MẠI: Tóm tắt 3 ý chính (Thời gian, Đối tượng, Quà) rồi hỏi lại: "Bạn có cần thêm thể lệ chi tiết không?"
+4. KHÔNG BIẾT: "Ui, thông tin này mình chưa có rồi 😅. Bạn liên hệ Ms. Linh (Marketing) giúp mình nhé!"
 """
 
-# --- 6. GIAO DIỆN NGƯỜI DÙNG ---
+# --- 6. GIAO DIỆN ---
 
-# === SIDEBAR (CỘT TRÁI - Dành cho Visual Search) ===
+# === SIDEBAR (Visual Search) ===
 with st.sidebar:
     st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bao_Viet_Holdings_Logo.svg/1200px-Bao_Viet_Holdings_Logo.svg.png", width=180)
-    st.markdown("### 📸 Tra cứu bằng Ảnh")
-    st.caption("Upload poster/banner để hỏi thông tin.")
-    
+    st.markdown("### 📸 Tra cứu Ảnh")
+    st.info("Upload poster/banner để hỏi thông tin.")
     uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
+    
     img_data = None
     if uploaded_img:
         img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Ảnh bạn vừa tải lên", use_container_width=True)
-        st.success("Ảnh đã sẵn sàng! Hãy đặt câu hỏi bên khung chat.")
+        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
+        st.success("Ảnh đã sẵn sàng!")
 
-# === MAIN SCREEN (KHUNG CHAT CHÍNH) ===
+# === MAIN (Chatbot) ===
 st.title("🛡️ BV-Atlas: Marketing Assistant")
 
 # Kiểm tra dữ liệu
@@ -102,7 +103,7 @@ if KNOWLEDGE_TEXT is None:
 
 # Khởi tạo chat
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Chào bạn! 👋 Mình là BV-Atlas đây. Hôm nay mình có thể giúp gì cho bạn nè? (Tìm tài liệu, check khuyến mãi, hay tìm ảnh?)"}]
+    st.session_state.messages = [{"role": "assistant", "content": "Chào bạn! 👋 Mình là BV-Atlas đây. Hôm nay mình có thể giúp gì cho bạn nè?"}]
 
 # Hiện lịch sử chat
 for msg in st.session_state.messages:
@@ -110,14 +111,14 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"], avatar=avatar):
         st.markdown(msg["content"])
 
-# === Ô NHẬP LIỆU (TỰ ĐỘNG DÍNH DƯỚI ĐÁY) ===
-if prompt := st.chat_input("Nhập câu hỏi của bạn..."):
+# === INPUT (Xử lý thông minh) ===
+if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia)"):
     # 1. Hiện câu hỏi user
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
-    # 2. Xử lý trả lời
+    # 2. Bot trả lời
     with st.chat_message("assistant", avatar="🛡️"):
         with st.spinner("Đang tra cứu..."):
             try:
