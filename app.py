@@ -13,65 +13,62 @@ st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/fa
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (BẮT BUỘC LIGHT MODE - CHỮ ĐEN) ---
+# --- 2. CSS GIAO DIỆN (STYLE GIỐNG ẢNH MẪU 99%) ---
 st.markdown("""
 <style>
-    /* 1. Ép Nền Trắng toàn bộ App */
+    /* Nền trắng sạch sẽ */
     .stApp { background-color: #FFFFFF; color: #000000; }
     
-    /* 2. Ép Thanh Sidebar màu xám sáng */
-    section[data-testid="stSidebar"] {
-        background-color: #F8F9FA;
-        border-right: 1px solid #E0E0E0;
-    }
-    
-    /* 3. Ép Ô Nhập liệu (Chat Input) thành Nền Trắng - Chữ Đen */
-    .stChatInput textarea {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #CCCCCC !important;
-    }
+    /* === BONG BÓNG CHAT === */
+    .stChatMessage { padding: 15px; border-radius: 15px; margin-bottom: 5px; display: flex; color: #000000 !important; }
+    .stChatMessage p, .stChatMessage li { color: #000000 !important; font-size: 16px; line-height: 1.5; }
 
-    /* === 4. CẤU HÌNH BONG BÓNG CHAT === */
-    
-    /* CHUNG: Tất cả chữ trong khung chat phải là MÀU ĐEN */
-    .stChatMessage p, .stChatMessage li, .stChatMessage div {
-        color: #000000 !important;
-    }
-
-    /* BOT (Nói trước -> Số Lẻ): Nền Xám Nhạt (#F0F2F6) */
+    /* BOT (Trái - Xám Nhạt) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #F0F2F6 !important;
+        background-color: #F2F4F6; /* Xám nhạt */
         border: none;
-        border-radius: 20px 20px 20px 0px;
-        padding: 15px;
+        flex-direction: row;
     }
-
-    /* USER (Nói sau -> Số Chẵn): Nền Trắng (#FFFFFF) + Viền Xám */
+    
+    /* USER (Phải - Xanh Nhạt - Không viền hoặc viền rất mờ) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E0E0E0 !important;
-        border-radius: 20px 20px 0px 20px;
-        padding: 15px;
-        flex-direction: row-reverse; /* Đảo avatar sang phải */
+        background-color: #EBF7FF; /* Xanh nhạt giống ảnh */
+        border: none;
+        flex-direction: row-reverse;
         text-align: right;
     }
-    
-    /* Chỉnh lề cho User khi đảo chiều */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child {
-        margin-left: 10px; margin-right: 0;
-    }
+    /* Chỉnh lề nội dung User */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { margin-left: 10px; margin-right: 0; }
 
-    /* 5. LINK MÀU XANH (Blue) */
-    .stChatMessage a {
-        color: #0068C9 !important;
-        font-weight: bold;
-        text-decoration: none;
-    }
+    /* Link màu Xanh đậm */
+    .stChatMessage a { color: #0068C9 !important; font-weight: 600; text-decoration: none; }
     .stChatMessage a:hover { text-decoration: underline; }
 
-    /* Ẩn Header */
+    /* === THANH NHẬP LIỆU (Input) === */
+    /* Bo tròn như viên thuốc, nền xám */
+    .stChatInput textarea {
+        background-color: #F0F2F5 !important; /* Xám nhạt */
+        color: #000000 !important;
+        border: 1px solid #E0E0E0 !important;
+        border-radius: 25px !important; /* Bo tròn */
+        padding: 10px 15px;
+    }
+    
+    /* Ẩn các thành phần thừa */
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
+    
+    /* Chỉnh nút Feedback nhỏ lại */
+    .stButton button {
+        border: none;
+        background: transparent;
+        color: #555;
+        padding: 0px 10px;
+        font-size: 14px;
+    }
+    .stButton button:hover {
+        color: #0068C9;
+        background: transparent;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -137,53 +134,61 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 5. PHONG CÁCH:
    - Thân thiện, ngắn gọn. Xưng "Mình" - "Bạn".
 """
-# --- 6. GIAO DIỆN CHÍNH (LAYOUT 1 CỘT - MOBILE FRIENDLY) ---
+# --- 6. GIAO DIỆN CHÍNH (LAYOUT 1 CỘT) ---
 
-# Tiêu đề & Logo nằm cùng hàng (tạo cảm giác App)
-col1, col2 = st.columns([1, 5])
-with col1:
-    st.image(BOT_AVATAR, width=80)
+# Tiêu đề & Logo
+col1, col2 = st.columns([1, 6])
+with col1: st.image(BOT_AVATAR, width=70)
 with col2:
-    st.title("BV-Atlas Marketing")
+    st.subheader("BV-Atlas: Marketing Assistant")
     st.caption("Trợ lý tra cứu Tài liệu & Hình ảnh")
 
 if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
+    st.warning("⚠️ Admin chưa upload file `Du_lieu_BV_Atlas.docx`.")
 
-# === KHU VỰC UPLOAD (Đưa vào giữa - Dạng Thanh trượt Expander) ===
-# Thay thế hoàn toàn cho Sidebar bên trái trước đây
-with st.expander("📎 Đính kèm ảnh/Poster để tra cứu (Nhấn để mở)", expanded=False):
-    uploaded_img = st.file_uploader("Chọn ảnh từ máy...", type=['jpg', 'png', 'jpeg'])
-    
-    img_data = None
-    if uploaded_img:
-        img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Đã đính kèm ảnh", width=200)
-        st.success("✅ Ảnh đã sẵn sàng! Hãy đặt câu hỏi bên dưới.")
-
-# === KHUNG CHAT (Giữ nguyên logic bên dưới) ===
-
-# Khởi tạo lịch sử (Bot nói trước -> Luôn là số lẻ 1)
+# 1. KHỞI TẠO LỊCH SỬ
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant", "content": f"Xin chào! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì hôm nay?"}
     ]
 
-# Hiển thị lịch sử
-for msg in st.session_state.messages:
+# 2. HIỂN THỊ LỊCH SỬ CHAT
+for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "assistant":
+        # Tin nhắn Bot
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
+            
+            # --- TÍNH NĂNG FEEDBACK (CHỈ HIỆN CHO CÂU TRẢ LỜI CỦA BOT) ---
+            if i > 0: # Không hiện cho câu chào đầu tiên
+                col_fb1, col_fb2, col_fb3 = st.columns([4, 1, 1])
+                with col_fb1: st.caption("Bạn thấy kết quả này thế nào?")
+                with col_fb2: 
+                    if st.button("👍", key=f"like_{i}"): st.toast("Cảm ơn bạn đã đánh giá!")
+                with col_fb3: 
+                    if st.button("👎", key=f"dislike_{i}"): st.toast("Ban Marketing sẽ cải thiện thêm!")
     else:
+        # Tin nhắn User
         with st.chat_message(msg["role"], avatar="👤"):
             st.markdown(msg["content"])
 
-# Ô Nhập liệu
-if prompt := st.chat_input("Nhập câu hỏi..."):
+# 3. KHU VỰC UPLOAD (Nằm ngay trên ô nhập liệu)
+with st.expander("📎 Đính kèm ảnh/Poster (Nhấn để mở)", expanded=False):
+    uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed")
+    img_data = None
+    if uploaded_img:
+        img_data = Image.open(uploaded_img)
+        st.image(img_data, caption="Đã đính kèm", width=200)
+        st.success("Ảnh đã sẵn sàng!")
+
+# 4. Ô NHẬP LIỆU (Placeholder có gợi ý)
+if prompt := st.chat_input("Nhập câu hỏi... (VD: Tải tờ rơi An Gia, Poster CTKM này là gì?)"):
+    # User
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
+    # Bot
     with st.chat_message("assistant", avatar=BOT_AVATAR):
         with st.spinner("..."):
             try:
@@ -207,6 +212,9 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "content": response.text})
+                
+                # Feedback hiện ngay sau khi trả lời xong
+                st.rerun() # Load lại trang để hiện nút like/dislike
                 
             except Exception as e:
                 st.error(f"Lỗi: {e}")
