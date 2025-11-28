@@ -136,22 +136,22 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 """
 # --- 6. GIAO DIỆN CHÍNH ---
 
-# === HEADER (LOGO & TÊN Ở GIỮA) ===
-# Sử dụng HTML để căn giữa tuyệt đối
-st.markdown(f"""
-    <div class="header-container">
-        <img src="{BOT_AVATAR}" width="80">
-        <div class="header-title">BV-Atlas Marketing</div>
-    </div>
-""", unsafe_allow_html=True)
+# === HEADER (LOGO & TÊN) ===
+# Căn giữa và làm nổi bật
+col_logo, col_text = st.columns([1, 6])
+with col_logo:
+    st.image(BOT_AVATAR, width=70)
+with col_text:
+    st.subheader("BV-Atlas Marketing")
+    st.caption("Trợ lý tra cứu Tài liệu & Hình ảnh")
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ
+# 1. KHỞI TẠO LỊCH SỬ (Thêm trường 'type')
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì hôm nay?"}
     ]
 
 # 2. HIỂN THỊ LỊCH SỬ CHAT
@@ -159,6 +159,7 @@ for i, msg in enumerate(st.session_state.messages):
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
             st.markdown(msg["content"])
+            # Feedback Buttons
             if i > 0 and msg.get("type") == "text":
                 c1, c2, c3 = st.columns([0.5, 0.5, 8])
                 with c1: 
@@ -172,20 +173,17 @@ for i, msg in enumerate(st.session_state.messages):
             else:
                 st.markdown(msg["content"])
 
-# 3. KHU VỰC NHẬP LIỆU & ĐÍNH KÈM
-col_attach, col_space = st.columns([1, 5])
-with col_attach:
-    # Nút Popover ghim ảnh (Nằm ngay trên ô nhập)
-    with st.popover("📎", help="Đính kèm ảnh"):
-        st.markdown("### Chọn ảnh")
-        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
-        current_img_data = None
-        if uploaded_file:
-            current_img_data = Image.open(uploaded_file)
-            st.image(current_img_data, width=150)
-            st.success("Đã chọn!")
+# 3. KHU VỰC ĐÍNH KÈM (EXPANDER GỌN GÀNG)
+# Tôi dùng st.expander với icon cái ghim để giống Zalo nhất có thể
+with st.expander("📎 Đính kèm ảnh (Nhấn để mở)", expanded=False):
+    uploaded_file = st.file_uploader("Chọn ảnh từ máy...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="uploader")
+    current_img_data = None
+    if uploaded_file:
+        current_img_data = Image.open(uploaded_file)
+        st.image(current_img_data, width=150)
+        st.success("✅ Ảnh đã sẵn sàng! Hãy nhập câu hỏi bên dưới.")
 
-# 4. XỬ LÝ KHI USER GỬI TIN
+# 4. Ô NHẬP LIỆU
 if prompt := st.chat_input("Nhập câu hỏi..."):
     # Xử lý gửi ảnh
     if current_img_data:
@@ -210,7 +208,7 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
 
                 final_prompt = [
                     f"{SYSTEM_PROMPT}\n",
-                    f"=== DỮ LIỆU ===\n{KNOWLEDGE_TEXT}\n",
+                    f"=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n",
                     f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
                     f"CÂU HỎI USER: {prompt}"
                 ]
