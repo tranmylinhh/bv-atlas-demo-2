@@ -239,6 +239,7 @@ if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = str(uuid.uuid4())
 
 # --- 6. GIAO DIỆN CHÍNH ---
+
 # === SIDEBAR: CHUYỂN ĐỔI USER / ADMIN ===
 with st.sidebar:
     st.image(BOT_AVATAR, width=120)
@@ -256,7 +257,8 @@ with st.sidebar:
         if uploaded_img:
             img_data = Image.open(uploaded_img)
             st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
-# === LOGIC MÀN HÌNH CHÍNH === 
+
+# === LOGIC MÀN HÌNH CHÍNH ===
 
 if app_mode == "🔐 Admin Báo cáo":
     # === GIAO DIỆN ADMIN ===
@@ -284,82 +286,75 @@ if app_mode == "🔐 Admin Báo cáo":
     elif password:
         st.error("Sai mật khẩu!")
 
-else: 
-
-# === GIAO DIỆN CHAT (USER) ===
-# Header
-st.markdown(f"""
+else:
+    # === GIAO DIỆN CHAT (USER) ===
+    
+    # Header
+    st.markdown(f"""
         <div class="header-container">
             <img src="{BOT_AVATAR}" width="60" style="vertical-align: middle;">
             <div class="header-title">BV-Atlas Marketing</div>
         </div>
     """, unsafe_allow_html=True)
 
-if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
+    if KNOWLEDGE_TEXT is None:
+        st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
 
-# 1. KHỞI TẠO LỊCH SỬ
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas đây. Bạn cần tìm tài liệu hay check thông tin chương trình khuyến mãi hôm nay?"}
-    ]
-if "uploader_key" not in st.session_state:
-    st.session_state.uploader_key = str(uuid.uuid4())
+    # Lịch sử Chat
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì hôm nay?"}]
+    if "uploader_key" not in st.session_state:
+        st.session_state.uploader_key = str(uuid.uuid4())
 
-# 2. HIỂN THỊ LỊCH SỬ CHAT
-for msg in st.session_state.messages:
-    if msg["role"] == "assistant":
-        with st.chat_message(msg["role"], avatar=BOT_AVATAR):
-            st.markdown(msg["content"])
-    else:
-        with st.chat_message(msg["role"], avatar="👤"):
-            if msg.get("type") == "image":
-                st.image(msg["content"], width=200)
-            else:
-                st.markdown(msg["content"])
+    for msg in st.session_state.messages:
+        if msg["role"] == "assistant":
+            with st.chat_message(msg["role"], avatar=BOT_AVATAR): st.markdown(msg["content"])
+        else:
+            with st.chat_message(msg["role"], avatar="👤"):
+                if msg.get("type") == "image": st.image(msg["content"], width=200)
+                else: st.markdown(msg["content"])
 
-# 3. Ô NHẬP LIỆU (FIX LỖI GIAO DIỆN)
-if prompt := st.chat_input("Nhập câu hỏi..."):
-    # Xử lý gửi ảnh (Từ Sidebar)
-    if img_data:
-        st.session_state.messages.append({"role": "user", "type": "image", "content": img_data})
-        with st.chat_message("user", avatar="👤"):
-            st.image(img_data, width=200)
+    # Input Chat
+    if prompt := st.chat_input("Nhập câu hỏi..."):
+        # Xử lý User
+        if img_data:
+            st.session_state.messages.append({"role": "user", "type": "image", "content": img_data})
+            with st.chat_message("user", avatar="👤"): st.image(img_data, width=200)
             
-    # Xử lý gửi chữ
-    st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
-    with st.chat_message("user", avatar="👤"):
-        st.markdown(prompt)
+        st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
+        with st.chat_message("user", avatar="👤"): st.markdown(prompt)
 
-    # Bot trả lời
-    with st.chat_message("assistant", avatar=BOT_AVATAR):
-        with st.spinner("..."):
-            try:
-                history_text = ""
-                for msg in st.session_state.messages[-5:]:
-                    if msg.get("type") == "text":
-                        role_name = "User" if msg["role"] == "user" else "BV-Atlas"
-                        history_text += f"{role_name}: {msg['content']}\n"
+        # Bot trả lời & Ghi Log
+        with st.chat_message("assistant", avatar=BOT_AVATAR):
+            with st.spinner("..."):
+                try:
+                    history_text = ""
+                    for msg in st.session_state.messages[-5:]:
+                        if msg.get("type") == "text":
+                            role_name = "User" if msg["role"] == "user" else "BV-Atlas"
+                            history_text += f"{role_name}: {msg['content']}\n"
 
-                final_prompt = [
-                    f"{SYSTEM_PROMPT}\n",
-                    f"=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n",
-                    f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
-                    f"CÂU HỎI USER: {prompt}"
-                ]
-                
-                if img_data:
-                    final_prompt.append("LƯU Ý: User gửi ảnh bên Sidebar. Hãy phân tích.")
-                    final_prompt.append(img_data)
-                
-                response = model.generate_content(final_prompt)
-                
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
-                
-                # Reset Sidebar Uploader
-                st.session_state.uploader_key = str(uuid.uuid4())
-                st.rerun()
-                
-            except Exception as e:
-                st.error(f"Lỗi: {e}")
+                    final_prompt = [
+                        f"{SYSTEM_PROMPT}\n",
+                        f"=== DỮ LIỆU NỘI BỘ ===\n{KNOWLEDGE_TEXT}\n",
+                        f"=== LỊCH SỬ CHAT ===\n{history_text}\n",
+                        f"CÂU HỎI USER: {prompt}"
+                    ]
+                    
+                    if img_data:
+                        final_prompt.append("User gửi ảnh. Hãy phân tích.")
+                        final_prompt.append(img_data)
+                    
+                    response = model.generate_content(final_prompt)
+                    
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
+                    
+                    # --- GHI LOG (Quan trọng) ---
+                    log_data(prompt, response.text, "Image" if img_data else "Text")
+                    
+                    st.session_state.uploader_key = str(uuid.uuid4())
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"Lỗi: {e}")
