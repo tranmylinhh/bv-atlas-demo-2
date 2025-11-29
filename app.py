@@ -68,10 +68,29 @@ st.markdown("""
         text-align: right;
     }
     
-    /* Link */
-    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
 
-    /* 5. KHUNG NHẬP LIỆU (FIX LỖI CHỒNG KHUNG) */
+    /* 5. ÉP MÀU LINK XANH (QUAN TRỌNG - ĐÈ LÊN MÀU ĐEN Ở TRÊN) */
+    /* Chỉ áp dụng cho thẻ 'a' (đường dẫn) */
+    .stChatMessage a { 
+        color: #005792 !important; /* Xanh Bảo Việt đậm đà */
+        font-weight: 700;          /* In đậm cho dễ thấy */
+        text-decoration: none;     /* Bỏ gạch chân cho đẹp */
+    }
+    .stChatMessage a:hover { 
+        text-decoration: underline; /* Di chuột vào mới hiện gạch chân */
+        color: #003366 !important; /* Di chuột vào thì xanh tối hơn chút */
+    }
+    /* Áp dụng cho đoạn văn, danh sách, tiêu đề... */
+    .stChatMessage p, 
+    .stChatMessage div, 
+    .stChatMessage span, 
+    .stChatMessage li,
+    .stChatMessage h1, .stChatMessage h2, .stChatMessage h3,
+    .stChatMessage table, .stChatMessage td, .stChatMessage th {
+        color: #000000 !important; 
+    }
+
+    /* 6. KHUNG NHẬP LIỆU (FIX LỖI CHỒNG KHUNG) */
     
     /* Ẩn khung chứa mặc định của Streamlit (Cái gây ra viền chồng) */
     .stChatInput {
@@ -102,7 +121,7 @@ st.markdown("""
         color: #005792 !important;
     }
 
-    /* 6. Box Upload (Sidebar) */
+    /* 7. Box Upload (Sidebar) */
     [data-testid="stFileUploader"] {
         background-color: #FFFFFF;
         border: 1px dashed #CCC;
