@@ -10,7 +10,7 @@ from datetime import datetime
 st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="centered")
 
 # --- CẤU HÌNH AVATAR ---
-BOT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bao_Viet_Holdings_Logo.svg/512px-Bao_Viet_Holdings_Logo.svg.png"
+BOT_AVATAR = "logo.jpg"
 
 # --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN ĐẸP) ---
 st.markdown("""
