@@ -12,70 +12,88 @@ st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="c
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (FIX MÀU CHỮ ĐEN 100%) ---
+# --- 2. CSS GIAO DIỆN (FIX LỖI BOX CHỒNG BOX) ---
 st.markdown("""
 <style>
-    /* Nền tổng thể: Xanh băng nhạt */
+    /* 1. Nền tổng thể */
     .stApp { background-color: #F0F4F8; color: #000000; }
     
-    /* === BẮT BUỘC MỌI CHỮ TRONG KHUNG CHAT LÀ MÀU ĐEN === */
+    /* 2. Bong bóng chat */
     .stChatMessage p, .stChatMessage div, .stChatMessage li, .stChatMessage span {
         color: #000000 !important;
         font-size: 16px;
     }
 
-    /* === 1. BONG BÓNG CHAT BOT (BÊN TRÁI - DÒNG LẺ) === */
+    /* Bot (Trái) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #FFFFFF; /* Nền Trắng */
+        background-color: #FFFFFF;
         border: 1px solid #E0E0E0;
         border-radius: 20px 20px 20px 5px;
         padding: 15px;
         flex-direction: row;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    /* === 2. BONG BÓNG CHAT USER (BÊN PHẢI - DÒNG CHẴN) === */
+    /* User (Phải) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #D1EAFF; /* Xanh dương nhạt (Dễ đọc chữ đen) */
+        background-color: #D1EAFF;
         border: 1px solid #B3D7FF;
         border-radius: 20px 20px 5px 20px;
         padding: 15px;
         flex-direction: row-reverse;
         text-align: right;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { 
         margin-left: 10px; margin-right: 0; align-items: flex-end;
     }
 
-    /* === 3. HEADER ĐẸP === */
-    .header-box {
-        text-align: center;
-        padding: 20px;
-        margin-bottom: 20px;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    /* 3. FIX LỖI KHUNG NHẬP LIỆU (QUAN TRỌNG) */
+    /* Làm trong suốt khung chứa bên ngoài */
+    .stChatInput {
+        background-color: transparent !important;
+        border: none !important;
     }
-    .header-title { color: #005792; font-size: 26px; font-weight: 800; margin: 0; }
-    .header-subtitle { color: #555; font-size: 14px; margin-top: 5px; }
+    
+    /* Can thiệp vào lớp vỏ bọc của thanh chat để xóa màu xám */
+    .stChatInput > div {
+        background-color: transparent !important;
+        border: none !important;
+        outline: none !important;
+    }
 
-    /* === 4. KHUNG NHẬP LIỆU NỔI === */
-    .stChatInput { padding-bottom: 30px; }
+    /* Chỉ tô màu trắng cho đúng cái ô nhập liệu (Textarea) */
     .stChatInput textarea {
         background-color: #FFFFFF !important;
         color: #000000 !important;
-        border: 2px solid #005792 !important;
+        border: 2px solid #005792 !important; /* Viền xanh nổi bật */
         border-radius: 30px !important;
-        box-shadow: 0 4px 10px rgba(0,87,146,0.1);
+        padding: 12px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Đổ bóng nhẹ cho đẹp */
     }
     
+    /* Nút Gửi (Mũi tên) */
+    .stChatInput button {
+        color: #005792 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    .stChatInput button:hover {
+        color: #003366 !important;
+    }
+
     /* Link */
     .stChatMessage a { color: #005792 !important; font-weight: bold; }
     
     /* Nút Ghim */
     button[kind="secondary"] { color: #005792; border: none; background: white; border-radius: 50%; width: 40px; height: 40px; }
 
+    /* Header & Footer */
+    .header-box {
+        text-align: center; padding: 20px; margin-bottom: 20px; background: white;
+        border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .header-title { color: #005792; font-size: 26px; font-weight: 800; margin: 0; }
+    .header-subtitle { color: #555; font-size: 14px; margin-top: 5px; }
+    
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
