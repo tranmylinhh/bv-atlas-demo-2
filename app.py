@@ -12,51 +12,94 @@ st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="c
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN ĐẸP) ---
+# --- 2. CSS GIAO DIỆN (TÙY BIẾN SÂU) ---
 st.markdown("""
 <style>
-    /* Nền trắng */
-    .stApp { background-color: #FFFFFF; color: #000000; }
-    
-    /* === BONG BÓNG CHAT === */
-    .stChatMessage { padding: 10px 15px; border-radius: 18px; margin-bottom: 5px; display: flex; color: #000000 !important; }
-    .stChatMessage p, .stChatMessage li { color: #000000 !important; margin-bottom: 0px; }
-
-    /* BOT (Trái) - Xám nhạt */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #F2F4F6; border: none; flex-direction: row;
+    /* 1. NỀN TỔNG THỂ (Màu xanh băng #eefaff) */
+    .stApp { 
+        background-color: #eefaff; 
+        color: #000000; 
     }
     
-    /* USER (Phải) - Xanh Zalo Nhạt */
+    /* 2. HEADER RIÊNG BIỆT (Card trắng nổi bật) */
+    .header-box {
+        background-color: #FFFFFF;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px; /* Cách xa khung chat */
+        border: 1px solid #DCEEFB;
+    }
+    .header-logo { width: 70px; margin-right: 20px; }
+    .header-text h1 { margin: 0; font-size: 24px; color: #005792; font-weight: 800; }
+    .header-text p { margin: 0; font-size: 14px; color: #666; }
+
+    /* 3. BONG BÓNG CHAT */
+    /* Bot (Trái): Nền Trắng (cho nổi trên nền xanh) */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #FFFFFF; 
+        border: 1px solid #DCEEFB;
+        border-radius: 20px 20px 20px 5px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    
+    /* User (Phải): Nền Xanh Đậm (#005792) - Chữ Trắng */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #E5F3FF;
-        border: 1px solid #CDE8FF;
+        background-color: #005792; 
+        color: #FFFFFF !important;
+        border-radius: 20px 20px 5px 20px;
+        padding: 15px;
         flex-direction: row-reverse;
         text-align: right;
+        box-shadow: 0 4px 10px rgba(0,87,146,0.3);
     }
     
-    /* Link */
-    .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
+    /* Fix màu chữ User thành trắng */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) p,
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) div {
+        color: #FFFFFF !important;
+    }
+
+    /* Link: Màu vàng kim trên nền xanh User, Màu xanh trên nền trắng Bot */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) a { color: #FFD700 !important; }
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) a { color: #005792 !important; font-weight: bold;}
+
+    /* 4. KHUNG TYPING "BAY BAY" (FLOATING INPUT) */
+    /* Nhấc khung chat lên khỏi đáy và bo tròn */
+    [data-testid="stChatInput"] {
+        padding-bottom: 20px;
+        max-width: 700px; /* Giới hạn chiều rộng để đẹp hơn */
+        margin: 0 auto;   /* Căn giữa */
+        background-color: transparent; /* Nền trong suốt để thấy background #eefaff */
+    }
     
-    /* === THANH CÔNG CỤ ĐÍNH KÈM === */
+    /* Ô nhập liệu bên trong */
+    .stChatInput textarea {
+        background-color: #FFFFFF !important;
+        border: 2px solid #005792 !important; /* Viền xanh nổi bật */
+        border-radius: 30px !important; /* Bo tròn như viên thuốc */
+        box-shadow: 0 8px 20px rgba(0,87,146,0.15); /* Đổ bóng tạo hiệu ứng bay */
+        color: #000000 !important;
+    }
+    
+    /* Nút Gửi */
+    .stChatInput button { color: #005792 !important; }
+
+    /* Nút Đính kèm (Ghim) */
     button[kind="secondary"] {
-        border: none; 
-        background-color: transparent !important; 
-        color: #555; 
-        font-size: 24px; 
-        padding: 0px 10px;
-        margin-bottom: -10px;
+        color: #005792 !important;
+        font-size: 22px;
+        border: none;
+        background: white;
+        border-radius: 50%;
+        width: 40px; height: 40px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 5px;
     }
-    button[kind="secondary"]:hover { color: #0068C9; }
-    
-    /* Ô nhập liệu */
-    .stTextInput input { 
-        background-color: #F0F2F5 !important; 
-        color: #000000 !important; 
-        border-radius: 25px; 
-        border: 1px solid #ddd; 
-    }
-    
+
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
