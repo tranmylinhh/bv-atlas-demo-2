@@ -25,6 +25,16 @@ st.markdown("""
         background-color: #F7F9FB; /* Xám rất nhạt */
         border-right: 1px solid #EAEAEA;
     }
+    /* Ép màu đen cho Tiêu đề, Radio Button, Label trong Sidebar */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] .stRadio p,
+    [data-testid="stSidebar"] .stMarkdown p {
+        color: #000000 !important;
+        font-weight: 500;
+    }
     /* Chỉnh Logo Sidebar căn giữa và to */
     section[data-testid="stSidebar"] img {
         display: block;
