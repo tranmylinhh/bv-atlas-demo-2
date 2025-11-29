@@ -3,17 +3,16 @@ import google.generativeai as genai
 from PIL import Image
 import docx
 import os
+import uuid  # <--- ĐÃ THÊM DÒNG QUAN TRỌNG NÀY
 from datetime import datetime
 
 # --- 1. CẤU HÌNH TRANG ---
-# Cũ: layout="wide"
-# Mới: layout="centered"
-st.set_page_config(page_title="BV-Atlas: Trợ lý Marketing", page_icon="img/favicon.png", layout="centered")
+st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="centered")
 
 # --- CẤU HÌNH AVATAR ---
-BOT_AVATAR = "logo.jpg"
+BOT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bao_Viet_Holdings_Logo.svg/512px-Bao_Viet_Holdings_Logo.svg.png"
 
-# --- 2. CSS GIAO DIỆN (TỐI GIẢN - CLEAN UI) ---
+# --- 2. CSS GIAO DIỆN (LIGHT MODE - CHUẨN ĐẸP) ---
 st.markdown("""
 <style>
     /* Nền trắng */
@@ -39,15 +38,14 @@ st.markdown("""
     /* Link */
     .stChatMessage a { color: #0068C9 !important; font-weight: bold; text-decoration: none; }
     
-    /* === THANH CÔNG CỤ ĐÍNH KÈM (POPOVER) === */
-    /* Biến nút bấm thành icon ghim gọn gàng */
+    /* === THANH CÔNG CỤ ĐÍNH KÈM === */
     button[kind="secondary"] {
         border: none; 
         background-color: transparent !important; 
         color: #555; 
         font-size: 24px; 
         padding: 0px 10px;
-        margin-bottom: -10px; /* Đẩy sát xuống ô nhập liệu */
+        margin-bottom: -10px;
     }
     button[kind="secondary"]:hover { color: #0068C9; }
     
