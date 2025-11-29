@@ -241,24 +241,21 @@ if "uploader_key" not in st.session_state:
 # --- 6. GIAO DIỆN CHÍNH ---
 # === SIDEBAR: CHUYỂN ĐỔI USER / ADMIN ===
 with st.sidebar:
-    # Logo to, tự động căn giữa theo CSS
-    st.image(BOT_AVATAR, use_container_width=True) 
-# Menu chuyển đổi
-    app_mode = st.radio("Chế độ xem:", ["👤 Tra cứu thông tin", "🔐 Admin Báo cáo"])
+    st.image(BOT_AVATAR, width=120)
+    
+    # Menu chuyển đổi
+    app_mode = st.radio("Chế độ xem:", ["👤 Nhân viên Tra cứu", "🔐 Admin Báo cáo"])
     st.markdown("---")
-if app_mode == "👤 Tra cứu thông tin":
-         st.markdown("### 📸 Tra cứu Ảnh")
-    # Box thông tin màu xanh nhạt
-    st.info("Upload ảnh Poster/Banner để hỏi thông tin.")
-    
-    # Nút upload
-    uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key=f"uploader_{st.session_state.get('uploader_key', 'init')}")
-    
-    img_data = None
-    if uploaded_img:
-        img_data = Image.open(uploaded_img)
-        st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
 
+    if app_mode == "👤 Nhân viên Tra cứu":
+        st.markdown("### 📸 Tra cứu Ảnh")
+        st.info("Upload ảnh Poster/Banner để hỏi thông tin.")
+        uploaded_img = st.file_uploader("Chọn ảnh...", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key=f"uploader_{st.session_state.get('uploader_key', 'init')}")
+        
+        img_data = None
+        if uploaded_img:
+            img_data = Image.open(uploaded_img)
+            st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
 # === LOGIC MÀN HÌNH CHÍNH === 
 
 if app_mode == "🔐 Admin Báo cáo":
