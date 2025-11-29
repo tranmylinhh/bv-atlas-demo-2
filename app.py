@@ -198,7 +198,7 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 # --- KHỞI TẠO SESSION STATE ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas, trợ lý hỗ trợ thông tin của Ban Marketing. Bạn cần tìm tài liệu hay check thông tin chương trình khuyến mãi gì hôm nay?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas đây. Bạn cần tìm tài liệu hay check thông tin chương trình khuyến mãi hôm nay?"}
     ]
 
 # Khởi tạo ID cho nút upload (Chìa khóa để fix lỗi đỏ)
@@ -240,7 +240,7 @@ if KNOWLEDGE_TEXT is None:
 # 1. KHỞI TẠO LỊCH SỬ
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas, trợ lý hỗ trợ thông tin của Ban Marketing. Bạn cần tìm tài liệu hay check thông tin chương trình khuyến mãi gì hôm nay?"}
+        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas đây. Bạn cần tìm tài liệu hay check thông tin chương trình khuyến mãi hôm nay?"}
     ]
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = str(uuid.uuid4())
