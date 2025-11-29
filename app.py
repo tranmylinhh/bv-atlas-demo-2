@@ -4,13 +4,15 @@ from PIL import Image
 import docx
 import os
 import uuid
+import pandas as pd
 from datetime import datetime
 
 # --- 1. CẤU HÌNH TRANG ---
 st.set_page_config(page_title="BV-Atlas Marketing", page_icon="img/favicon.png", layout="wide")
 
-# --- CẤU HÌNH AVATAR ---
+# --- CẤU HÌNH ---
 BOT_AVATAR = "logo.jpg"
+ADMIN_PASSWORD = "admin"  # Mật khẩu để vào xem báo cáo (Bổ sung 1)
 
 # --- 2. CSS GIAO DIỆN (TỐI ƯU UI/UX) ---
 st.markdown("""
@@ -160,6 +162,24 @@ def load_knowledge_base():
 
 KNOWLEDGE_TEXT = load_knowledge_base()
 
+# Khởi tạo kho Log (Lưu tạm trong phiên làm việc) bổ sung 2
+if "logs" not in st.session_state:
+    st.session_state.logs = []
+
+def log_data(question, answer, type="Text"):
+    # Tự động đánh giá trạng thái
+    status = "✅ Thành công"
+    if "chưa có thông tin" in answer or "liên hệ" in answer:
+        status = "❌ Thiếu dữ liệu (Cần bổ sung)"
+    
+    st.session_state.logs.append({
+        "Thời gian": datetime.now().strftime("%H:%M %d/%m"),
+        "Câu hỏi": question,
+        "Câu trả lời": answer,
+        "Loại": type,
+        "Trạng thái": status
+    })
+
 # --- 5. SYSTEM PROMPT (UPDATE QUY TẮC KHÔNG SPAM LINK) ---
 current_date = datetime.now().strftime("%d/%m/%Y")
 
@@ -219,13 +239,15 @@ if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = str(uuid.uuid4())
 
 # --- 6. GIAO DIỆN CHÍNH ---
-
-# === SIDEBAR (LOGO TO & UPLOAD) ===
+# === SIDEBAR: CHUYỂN ĐỔI USER / ADMIN ===
 with st.sidebar:
     # Logo to, tự động căn giữa theo CSS
     st.image(BOT_AVATAR, use_container_width=True) 
-    
-    st.markdown("### 📸 Tra cứu Ảnh")
+# Menu chuyển đổi
+    app_mode = st.radio("Chế độ xem:", ["👤 Tra cứu thông tin", "🔐 Admin Báo cáo"])
+    st.markdown("---")
+if app_mode == "👤 Tra cứu thông tin":
+         st.markdown("### 📸 Tra cứu Ảnh")
     # Box thông tin màu xanh nhạt
     st.info("Upload ảnh Poster/Banner để hỏi thông tin.")
     
@@ -237,8 +259,39 @@ with st.sidebar:
         img_data = Image.open(uploaded_img)
         st.image(img_data, caption="Ảnh xem trước", use_container_width=True)
 
-# === MAIN HEADER (LOGO & TÊN Ở GIỮA) ===
+# === LOGIC MÀN HÌNH CHÍNH === 
+
+if app_mode == "🔐 Admin Báo cáo":
+    # === GIAO DIỆN ADMIN ===
+    st.title("📊 Báo cáo Tra cứu BV-Atlas")
+    
+    password = st.text_input("Nhập mật khẩu Admin:", type="password")
+    if password == "admin123": # Mật khẩu Demo
+        if len(st.session_state.logs) > 0:
+            df = pd.DataFrame(st.session_state.logs)
+            
+            # Metrics
+            col_a, col_b, col_c = st.columns(3)
+            col_a.metric("Tổng lượt hỏi", len(df))
+            col_b.metric("Câu hỏi Thiếu dữ liệu", len(df[df['Trạng thái'].str.contains("Thiếu")]))
+            col_c.metric("Tỉ lệ đáp ứng", f"{100 - (len(df[df['Trạng thái'].str.contains("Thiếu")])/len(df)*100):.0f}%")
+            
+            st.markdown("### 📝 Nhật ký chi tiết")
+            st.dataframe(df, use_container_width=True)
+            
+            # Nút tải về
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Tải báo cáo về máy (Excel/CSV)", csv, "bao_cao_bvatlas.csv", "text/csv")
+        else:
+            st.info("Chưa có dữ liệu tra cứu nào trong phiên này. Hãy quay lại tab 'Nhân viên' và chat thử vài câu!")
+    elif password:
+        st.error("Sai mật khẩu!")
+
+else: 
+
+# === GIAO DIỆN CHAT (USER) ===
 # Dùng HTML thuần để đảm bảo hiển thị ảnh không bị lỗi
+
 st.markdown(f"""
     <div class="header-container">
         <img src="{BOT_AVATAR}" width="80" style="border-radius: 10px;">
