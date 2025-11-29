@@ -35,8 +35,7 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 500;
     }
-
-/* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
+    /* TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
     section[data-testid="stSidebar"] { 
         background-color: #F7F9FB; 
         border-right: 1px solid #E0E0E0; 
@@ -47,14 +46,6 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 700 !important;
         font-size: 14px !important;
-    }
-    
-    /* INPUT BOX (Ô nhập mật khẩu): Nền Xám - Chữ Đen */
-    [data-testid="stSidebar"] input {
-        background-color: #E8E8E8 !important; /* Màu xám rõ hơn */
-        color: #000000 !important;
-        border: 1px solid #CCCCCC !important;
-        border-radius: 8px;
     }
     
     /* Chỉnh Logo Sidebar căn giữa và to */
