@@ -3,42 +3,61 @@ import google.generativeai as genai
 from PIL import Image
 import docx
 import os
-import uuid  # <--- ĐÃ THÊM DÒNG QUAN TRỌNG NÀY
+import io
+import base64
 from datetime import datetime
 
-# --- 1. CẤU HÌNH TRANG ---
-st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="centered")
-
+# =========================
+# 1. CẤU HÌNH TRANG
+# =========================
+st.set_page_config(page_title="BV-Atlas Marketing", page_icon="img/favicon.png", layout="centered")
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (FIX LỖI BOX CHỒNG BOX) ---
+# =========================
+# 2. CSS GIAO DIỆN (MESSENGER STYLE - CHỮ ĐEN)
+# =========================
 st.markdown("""
 <style>
-    /* 1. Nền tổng thể */
-    .stApp { background-color: #F0F4F8; color: #000000; }
+    /* Nền trắng */
+    .stApp { background-color: #FFFFFF; color: #000000; }
     
-    /* 2. Bong bóng chat */
-    .stChatMessage p, .stChatMessage div, .stChatMessage li, .stChatMessage span {
-        color: #000000 !important;
-        font-size: 16px;
-    }
-
-    /* Bot (Trái) */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #FFFFFF;
-        border: 1px solid #E0E0E0;
-        border-radius: 20px 20px 20px 5px;
+    /* === HEADER === */
+    .header-box {
+        text-align: center;
         padding: 15px;
+        margin-bottom: 20px;
+        background: white;
+        border-bottom: 1px solid #F0F0F0;
+        position: sticky;
+        top: 0;
+        z-index: 99;
+    }
+    .header-title { color: #005792; font-size: 24px; font-weight: 800; margin: 0; }
+    
+    /* === BONG BÓNG CHAT === */
+    .stChatMessage {
+        padding: 12px 16px;
+        border-radius: 18px;
+        margin-bottom: 8px;
+        display: flex;
+        color: #000000 !important;
+    }
+    
+    /* Bắt buộc chữ đen */
+    .stChatMessage p, .stChatMessage li, .stChatMessage div { color: #000000 !important; }
+
+    /* BOT (Trái) */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #F2F4F6; /* Xám nhạt */
+        border: none;
         flex-direction: row;
     }
 
-    /* User (Phải) */
+    /* USER (Phải) */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #D1EAFF;
-        border: 1px solid #B3D7FF;
-        border-radius: 20px 20px 5px 20px;
-        padding: 15px;
+        background-color: #EBF7FF; /* Xanh nhạt */
+        border: 1px solid #D6EAF8;
         flex-direction: row-reverse;
         text-align: right;
     }
@@ -46,57 +65,28 @@ st.markdown("""
         margin-left: 10px; margin-right: 0; align-items: flex-end;
     }
 
-    /* 3. FIX LỖI KHUNG NHẬP LIỆU (QUAN TRỌNG) */
-    /* Làm trong suốt khung chứa bên ngoài */
-    .stChatInput {
-        background-color: transparent !important;
-        border: none !important;
-    }
+    /* Link màu Xanh Đậm */
+    .stChatMessage a { color: #0068C9 !important; font-weight: 700; text-decoration: none; }
+    .stChatMessage a:hover { text-decoration: underline; }
     
-    /* Can thiệp vào lớp vỏ bọc của thanh chat để xóa màu xám */
-    .stChatInput > div {
-        background-color: transparent !important;
-        border: none !important;
-        outline: none !important;
+    /* Nút Đính kèm (Ghim) */
+    button[kind="secondary"] { 
+        border: none; background: transparent; color: #555; font-size: 24px; padding: 0px 10px;
     }
+    button[kind="secondary"]:hover { color: #0068C9; background: transparent; }
 
-    /* Chỉ tô màu trắng cho đúng cái ô nhập liệu (Textarea) */
-    .stChatInput textarea {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 2px solid #005792 !important; /* Viền xanh nổi bật */
-        border-radius: 30px !important;
-        padding: 12px 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Đổ bóng nhẹ cho đẹp */
+    /* Ô nhập liệu */
+    .stTextInput input { 
+        background-color: #F0F2F5 !important; 
+        color: #000000 !important; 
+        border-radius: 25px; 
+        border: 1px solid #ddd; 
     }
-    
-    /* Nút Gửi (Mũi tên) */
-    .stChatInput button {
-        color: #005792 !important;
-        background: transparent !important;
-        border: none !important;
-    }
-    .stChatInput button:hover {
-        color: #003366 !important;
-    }
-
-    /* Link */
-    .stChatMessage a { color: #005792 !important; font-weight: bold; }
-    
-    /* Nút Ghim */
-    button[kind="secondary"] { color: #005792; border: none; background: white; border-radius: 50%; width: 40px; height: 40px; }
-
-    /* Header & Footer */
-    .header-box {
-        text-align: center; padding: 20px; margin-bottom: 20px; background: white;
-        border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    .header-title { color: #005792; font-size: 26px; font-weight: 800; margin: 0; }
-    .header-subtitle { color: #555; font-size: 14px; margin-top: 5px; }
     
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
+
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
@@ -161,25 +151,28 @@ QUY TẮC ỨNG XỬ (ƯU TIÊN CAO NHẤT):
 """
 # --- 6. GIAO DIỆN CHÍNH ---
 
-# Header
-col1, col2 = st.columns([1, 8])
-with col1: st.image(BOT_AVATAR, width=50)
-with col2: st.subheader("BV-Atlas Marketing")
+# --- Header ---
+st.markdown(f"""
+    <div class="header-box">
+        <img src="{BOT_AVATAR}" width="50" style="vertical-align: middle; margin-right: 10px;">
+        <span class="header-title" style="vertical-align: middle;">BV-Atlas Marketing</span>
+    </div>
+""", unsafe_allow_html=True)
 
 if KNOWLEDGE_TEXT is None:
-    st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
+    st.warning("⚠️ Chưa tìm thấy file `Du_lieu_BV_Atlas.docx`.")
 
-# 1. KHỞI TẠO LỊCH SỬ
+# --- Khởi tạo Lịch sử ---
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "type": "text", "content": f"Chào bạn! 👋 Mình là BV-Atlas. Bạn cần tìm tài liệu hay check khuyến mãi gì?"}
-    ]
+    # Lời chào đúng chuẩn Ban Marketing
+    welcome_msg = (
+        "Chào bạn! 👋 Mình là BV-Atlas - Trợ lý AI của Ban Marketing.\n"
+        "Mình có thể giúp bạn tra cứu Tài liệu sản phẩm, CTKM hoặc File thiết kế.\n"
+        "Bạn đang cần tìm thông tin cụ thể nào không?"
+    )
+    st.session_state.messages = [{"role": "assistant", "type": "text", "content": welcome_msg}]
 
-# Khởi tạo key cho uploader (để reset sau khi gửi)
-if "uploader_key" not in st.session_state:
-    st.session_state.uploader_key = str(uuid.uuid4())
-
-# 2. HIỂN THỊ LỊCH SỬ CHAT
+# --- Hiển thị Chat ---
 for msg in st.session_state.messages:
     if msg["role"] == "assistant":
         with st.chat_message(msg["role"], avatar=BOT_AVATAR):
@@ -191,15 +184,12 @@ for msg in st.session_state.messages:
             else:
                 st.markdown(msg["content"])
 
-# 3. THANH CÔNG CỤ ĐÍNH KÈM
+# --- Thanh công cụ & Input ---
 col_attach, col_space = st.columns([0.5, 9.5])
-
 with col_attach:
     with st.popover("📎", help="Đính kèm ảnh"):
         st.markdown("##### Chọn ảnh")
-        # Dùng key động để reset
-        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key=st.session_state.uploader_key)
-        
+        uploaded_file = st.file_uploader("Upload", type=['jpg', 'png', 'jpeg'], label_visibility="collapsed", key="img_uploader")
         current_img_data = None
         if uploaded_file:
             current_img_data = Image.open(uploaded_file)
@@ -208,25 +198,26 @@ with col_attach:
 
 with col_space:
     if current_img_data:
-        st.caption(f"✅ Đã đính kèm 1 ảnh. Nhập câu hỏi để gửi.")
+        st.caption("✅ Đã đính kèm ảnh.")
 
-# 4. Ô NHẬP LIỆU
+# --- Xử lý Input ---
 if prompt := st.chat_input("Nhập câu hỏi..."):
-    # Xử lý gửi ảnh
+    # User gửi ảnh
     if current_img_data:
         st.session_state.messages.append({"role": "user", "type": "image", "content": current_img_data})
         with st.chat_message("user", avatar="👤"):
             st.image(current_img_data, width=200)
-            
-    # Xử lý gửi chữ
+    
+    # User gửi text
     st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
     # Bot trả lời
     with st.chat_message("assistant", avatar=BOT_AVATAR):
-        with st.spinner("..."):
+        with st.spinner("BV-Atlas đang tra cứu..."):
             try:
+                # Ghép Prompt
                 history_text = ""
                 for msg in st.session_state.messages[-5:]:
                     if msg.get("type") == "text":
@@ -241,7 +232,7 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 ]
                 
                 if current_img_data:
-                    final_prompt.append("LƯU Ý: User vừa gửi ảnh. Hãy phân tích.")
+                    final_prompt.append("User gửi ảnh. Hãy phân tích.")
                     final_prompt.append(current_img_data)
                 
                 response = model.generate_content(final_prompt)
@@ -249,8 +240,8 @@ if prompt := st.chat_input("Nhập câu hỏi..."):
                 st.markdown(response.text)
                 st.session_state.messages.append({"role": "assistant", "type": "text", "content": response.text})
                 
-                # --- RESET NÚT UPLOAD ---
-                st.session_state.uploader_key = str(uuid.uuid4())
+                # Reset uploader
+                st.session_state["img_uploader"] = None 
                 st.rerun()
                 
             except Exception as e:
