@@ -288,7 +288,6 @@ else:
 
 # === GIAO DIỆN CHAT (USER) ===
 # Dùng HTML thuần để đảm bảo hiển thị ảnh không bị lỗi
-
 st.markdown(f"""
     <div class="header-container">
         <img src="{BOT_AVATAR}" width="80" style="border-radius: 10px;">
