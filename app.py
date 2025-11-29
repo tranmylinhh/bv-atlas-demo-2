@@ -287,14 +287,13 @@ if app_mode == "🔐 Admin Báo cáo":
 else: 
 
 # === GIAO DIỆN CHAT (USER) ===
-# Dùng HTML thuần để đảm bảo hiển thị ảnh không bị lỗi
+# Header
 st.markdown(f"""
-    <div class="header-container">
-        <img src="{BOT_AVATAR}" width="80" style="border-radius: 10px;">
-        <div class="header-title">BV-Atlas Marketing</div>
-        <div style="color: #666; margin-top: 5px;">Trợ lý thông tin Ban Marketing</div>
-    </div>
-""", unsafe_allow_html=True)
+        <div class="header-container">
+            <img src="{BOT_AVATAR}" width="60" style="vertical-align: middle;">
+            <div class="header-title">BV-Atlas Marketing</div>
+        </div>
+    """, unsafe_allow_html=True)
 
 if KNOWLEDGE_TEXT is None:
     st.warning("⚠️ Chưa tìm thấy file dữ liệu.")
