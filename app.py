@@ -12,98 +12,73 @@ st.set_page_config(page_title="BV-Atlas", page_icon="img/favicon.png", layout="c
 # --- CẤU HÌNH AVATAR ---
 BOT_AVATAR = "logo.jpg"
 
-# --- 2. CSS GIAO DIỆN (TÙY BIẾN SÂU) ---
+# --- 2. CSS GIAO DIỆN (FIX MÀU CHỮ ĐEN 100%) ---
 st.markdown("""
 <style>
-    /* 1. NỀN TỔNG THỂ (Màu xanh băng #eefaff) */
-    .stApp { 
-        background-color: #eefaff; 
-        color: #000000; 
-    }
+    /* Nền tổng thể: Xanh băng nhạt */
+    .stApp { background-color: #F0F4F8; color: #000000; }
     
-    /* 2. HEADER RIÊNG BIỆT (Card trắng nổi bật) */
-    .header-box {
-        background-color: #FFFFFF;
-        padding: 20px;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        display: flex;
-        align-items: center;
-        margin-bottom: 30px; /* Cách xa khung chat */
-        border: 1px solid #DCEEFB;
+    /* === BẮT BUỘC MỌI CHỮ TRONG KHUNG CHAT LÀ MÀU ĐEN === */
+    .stChatMessage p, .stChatMessage div, .stChatMessage li, .stChatMessage span {
+        color: #000000 !important;
+        font-size: 16px;
     }
-    .header-logo { width: 70px; margin-right: 20px; }
-    .header-text h1 { margin: 0; font-size: 24px; color: #005792; font-weight: 800; }
-    .header-text p { margin: 0; font-size: 14px; color: #666; }
 
-    /* 3. BONG BÓNG CHAT */
-    /* Bot (Trái): Nền Trắng (cho nổi trên nền xanh) */
+    /* === 1. BONG BÓNG CHAT BOT (BÊN TRÁI - DÒNG LẺ) === */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
-        background-color: #FFFFFF; 
-        border: 1px solid #DCEEFB;
+        background-color: #FFFFFF; /* Nền Trắng */
+        border: 1px solid #E0E0E0;
         border-radius: 20px 20px 20px 5px;
         padding: 15px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        flex-direction: row;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-    
-    /* User (Phải): Nền Xanh Đậm (#005792) - Chữ Trắng */
+
+    /* === 2. BONG BÓNG CHAT USER (BÊN PHẢI - DÒNG CHẴN) === */
     .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
-        background-color: #005792; 
-        color: #FFFFFF !important;
+        background-color: #D1EAFF; /* Xanh dương nhạt (Dễ đọc chữ đen) */
+        border: 1px solid #B3D7FF;
         border-radius: 20px 20px 5px 20px;
         padding: 15px;
         flex-direction: row-reverse;
         text-align: right;
-        box-shadow: 0 4px 10px rgba(0,87,146,0.3);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
-    
-    /* Fix màu chữ User thành trắng */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) p,
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) div {
-        color: #FFFFFF !important;
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) > div:first-child { 
+        margin-left: 10px; margin-right: 0; align-items: flex-end;
     }
 
-    /* Link: Màu vàng kim trên nền xanh User, Màu xanh trên nền trắng Bot */
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) a { color: #FFD700 !important; }
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) a { color: #005792 !important; font-weight: bold;}
-
-    /* 4. KHUNG TYPING "BAY BAY" (FLOATING INPUT) */
-    /* Nhấc khung chat lên khỏi đáy và bo tròn */
-    [data-testid="stChatInput"] {
-        padding-bottom: 20px;
-        max-width: 700px; /* Giới hạn chiều rộng để đẹp hơn */
-        margin: 0 auto;   /* Căn giữa */
-        background-color: transparent; /* Nền trong suốt để thấy background #eefaff */
+    /* === 3. HEADER ĐẸP === */
+    .header-box {
+        text-align: center;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
-    
-    /* Ô nhập liệu bên trong */
+    .header-title { color: #005792; font-size: 26px; font-weight: 800; margin: 0; }
+    .header-subtitle { color: #555; font-size: 14px; margin-top: 5px; }
+
+    /* === 4. KHUNG NHẬP LIỆU NỔI === */
+    .stChatInput { padding-bottom: 30px; }
     .stChatInput textarea {
         background-color: #FFFFFF !important;
-        border: 2px solid #005792 !important; /* Viền xanh nổi bật */
-        border-radius: 30px !important; /* Bo tròn như viên thuốc */
-        box-shadow: 0 8px 20px rgba(0,87,146,0.15); /* Đổ bóng tạo hiệu ứng bay */
         color: #000000 !important;
+        border: 2px solid #005792 !important;
+        border-radius: 30px !important;
+        box-shadow: 0 4px 10px rgba(0,87,146,0.1);
     }
     
-    /* Nút Gửi */
-    .stChatInput button { color: #005792 !important; }
-
-    /* Nút Đính kèm (Ghim) */
-    button[kind="secondary"] {
-        color: #005792 !important;
-        font-size: 22px;
-        border: none;
-        background: white;
-        border-radius: 50%;
-        width: 40px; height: 40px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        margin-bottom: 5px;
-    }
+    /* Link */
+    .stChatMessage a { color: #005792 !important; font-weight: bold; }
+    
+    /* Nút Ghim */
+    button[kind="secondary"] { color: #005792; border: none; background: white; border-radius: 50%; width: 40px; height: 40px; }
 
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
-
 # --- 3. KẾT NỐI API KEY ---
 if 'GOOGLE_API_KEY' in st.secrets:
     genai.configure(api_key=st.secrets['GOOGLE_API_KEY'])
