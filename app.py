@@ -35,18 +35,6 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 500;
     }
-    /* TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
-    section[data-testid="stSidebar"] { 
-        background-color: #F7F9FB; 
-        border-right: 1px solid #E0E0E0; 
-    }
-    
-    /* LABEL (Tiêu đề ô nhập): Màu Đen Đậm */
-    [data-testid="stSidebar"] label {
-        color: #000000 !important;
-        font-weight: 700 !important;
-        font-size: 14px !important;
-    }
     
     /* Chỉnh Logo Sidebar căn giữa và to */
     section[data-testid="stSidebar"] img {
