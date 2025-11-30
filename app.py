@@ -35,7 +35,34 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 500;
     }
+     /* === 2. SIDEBAR (KHU VỰC CẦN SỬA) === */
+    section[data-testid="stSidebar"] { 
+        background-color: #F7F9FB; 
+        border-right: 1px solid #E0E0E0; 
+    }
+
+    /* FIX 1: TIÊU ĐỀ & NHÃN (LABEL) TRONG SIDEBAR */
+    /* Nhắm thẳng vào widget label để ép màu đen */
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+        color: #000000 !important;
+        font-weight: 700 !important;
+        font-size: 15px !important;
+    }
+
+    /* FIX 2: Ô NHẬP LIỆU TRONG SIDEBAR (MẬT KHẨU) */
+    /* Nhắm thẳng vào input bên trong stTextInput */
+    [data-testid="stSidebar"] [data-testid="stTextInput"] input {
+        background-color: #E0E0E0 !important; /* Nền Xám Đậm hơn chút để rõ */
+        color: #000000 !important;             /* Chữ Đen */
+        border: 1px solid #999999 !important;  /* Viền Đen mờ */
+        caret-color: #000000 !important;       /* Con trỏ chuột đen */
+    }
     
+    /* FIX 3: LỰA CHỌN RADIO (CHẾ ĐỘ XEM) */
+    [data-testid="stSidebar"] [data-testid="stRadio"] label p {
+        color: #000000 !important;
+        font-weight: 500;
+    }
     /* Chỉnh Logo Sidebar căn giữa và to */
     section[data-testid="stSidebar"] img {
         display: block;
@@ -149,34 +176,6 @@ st.markdown("""
         border: 1px dashed #CCC;
         border-radius: 10px;
         padding: 10px;
-    }
-    /* === 2. SIDEBAR (KHU VỰC CẦN SỬA) === */
-    section[data-testid="stSidebar"] { 
-        background-color: #F7F9FB; 
-        border-right: 1px solid #E0E0E0; 
-    }
-
-    /* FIX 1: TIÊU ĐỀ & NHÃN (LABEL) TRONG SIDEBAR */
-    /* Nhắm thẳng vào widget label để ép màu đen */
-    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
-        color: #000000 !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-    }
-
-    /* FIX 2: Ô NHẬP LIỆU TRONG SIDEBAR (MẬT KHẨU) */
-    /* Nhắm thẳng vào input bên trong stTextInput */
-    [data-testid="stSidebar"] [data-testid="stTextInput"] input {
-        background-color: #E0E0E0 !important; /* Nền Xám Đậm hơn chút để rõ */
-        color: #000000 !important;             /* Chữ Đen */
-        border: 1px solid #999999 !important;  /* Viền Đen mờ */
-        caret-color: #000000 !important;       /* Con trỏ chuột đen */
-    }
-    
-    /* FIX 3: LỰA CHỌN RADIO (CHẾ ĐỘ XEM) */
-    [data-testid="stSidebar"] [data-testid="stRadio"] label p {
-        color: #000000 !important;
-        font-weight: 500;
     }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
