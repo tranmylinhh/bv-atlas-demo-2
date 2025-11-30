@@ -44,19 +44,7 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
-    section[data-testid="stSidebar"] { 
-        background-color: #F7F9FB; 
-        border-right: 1px solid #E0E0E0; 
-    }
-    
-    /* LABEL (Tiêu đề ô nhập): Màu Đen Đậm */
-    [data-testid="stSidebar"] label {
-        color: #000000 !important;
-        font-weight: 700 !important;
-        font-size: 14px !important;
-    }
-    
+    /* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) 
     /* INPUT BOX (Ô nhập mật khẩu): Nền Xám - Chữ Đen */
     [data-testid="stSidebar"] input {
         background-color: #E8E8E8 !important; /* Màu xám rõ hơn */
