@@ -14,80 +14,142 @@ st.set_page_config(page_title="BV-Atlas Marketing", page_icon="img/favicon.png",
 BOT_AVATAR = "logo.jpg"
 ADMIN_PASSWORD = "admin"  # Mật khẩu để vào xem báo cáo (Bổ sung 1)
 
-# --- 2. CSS GIAO DIỆN (CẬP NHẬT MỚI NHẤT) ---
+# --- 2. CSS GIAO DIỆN (TỐI ƯU UI/UX - FIX MÀU SIDEBAR) ---
 st.markdown("""
 <style>
-    /* 1. Nền tổng thể: Trắng - Chữ Đen */
+    /* 1. Nền tổng thể: Trắng */
     .stApp { background-color: #FFFFFF; color: #000000; }
-    h1, h2, h3, h4, h5, h6, p, div, span, li, .stMarkdown { color: #000000 !important; }
+    
+    /* 2. Sidebar: Màu xám nhẹ, Logo to */
+    section[data-testid="stSidebar"] {
+        background-color: #F7F9FB; /* Xám rất nhạt */
+        border-right: 1px solid #EAEAEA;
+    }
 
-    /* 2. HEADER CHÍNH (Căn giữa + Gạch ngang) */
+    /* --- FIX MỚI: ÉP MÀU ĐEN CHO NHÃN (LABEL) & TEXT TRONG SIDEBAR --- */
+    /* Bao gồm: Tiêu đề Radio, Nhãn ô nhập mật khẩu, Văn bản hướng dẫn */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] label p,           /* Nhãn của Radio/Input */
+    [data-testid="stSidebar"] .stRadio div {     /* Text của các lựa chọn Radio */
+        color: #000000 !important;
+        font-weight: 600 !important; /* In đậm nhẹ cho dễ đọc */
+    }
+
+    /* Chỉnh Logo Sidebar căn giữa và to */
+    section[data-testid="stSidebar"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 20px;
+    }
+
+    /* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
+    /* INPUT BOX (Ô nhập mật khẩu): Nền Xám Đậm hơn - Chữ Đen - Viền Rõ */
+    [data-testid="stSidebar"] input {
+        background-color: #E0E0E0 !important; /* Xám đậm hơn nền sidebar để nổi bật */
+        color: #000000 !important;             /* Chữ khi gõ màu đen */
+        border: 1px solid #999999 !important;  /* Viền xám đậm */
+        border-radius: 8px;
+        caret-color: #000000 !important;       /* Con trỏ chuột nhấp nháy màu đen */
+    }
+
+    /* 4. Header Chính (Giữa màn hình) */
     .header-container {
         display: flex;
         flex-direction: column;
-        align-items: center; /* Căn giữa ngang */
+        align-items: center;
         justify-content: center;
-        padding-bottom: 20px;
-        margin-bottom: 30px;
-        border-bottom: 2px solid #E0E0E0; /* Đường gạch ngang ngăn cách */
-    }
-    .header-logo {
-        width: 100px; /* Logo to hơn ở header */
-        margin-bottom: 15px;
+        margin-bottom: 40px;
+        padding-top: 20px;
     }
     .header-title {
-        color: #005792 !important;
-        font-size: 32px;
+        color: #005792;
+        font-size: 28px;
         font-weight: 800;
-        margin: 0;
-        text-align: center;
-    }
-    .header-subtitle {
-        color: #666 !important;
-        font-size: 16px;
-        margin-top: 5px;
-        text-align: center;
-    }
-
-    /* 3. SIDEBAR (Tùy chỉnh Logo và Box Upload) */
-    section[data-testid="stSidebar"] {
-        background-color: #F7F9FB;
-        border-right: 1px solid #E0E0E0;
+        margin-top: 15px;
     }
     
-    /* CSS để căn giữa Logo trong Sidebar */
-    section[data-testid="stSidebar"] .stImage {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
+    /* 5. Bong bóng Chat */
+    .stChatMessage { 
+        padding: 12px 18px; border-radius: 18px; margin-bottom: 10px; display: flex; color: #000000 !important;
+    }
+    .stChatMessage p { color: #000000 !important; }
+
+    /* Bot (Trái): Xám Nhạt */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) {
+        background-color: #F0F2F5; 
+        border: none;
+        flex-direction: row;
     }
     
-    /* CSS cho Box Upload trong Sidebar (Nền xám) */
-    [data-testid="stSidebar"] [data-testid="stFileUploader"] {
-        background-color: #F0F2F5 !important; /* Màu xám */
-        border: 1px dashed #B0B8C4;
-        border-radius: 12px;
-        padding: 15px;
+    /* User (Phải): Xanh Nhạt */
+    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) {
+        background-color: #E3F2FD; 
+        border: none;
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+    
+    /* 6. ÉP MÀU LINK XANH (QUAN TRỌNG - ĐÈ LÊN MÀU ĐEN Ở TRÊN) */
+    .stChatMessage a { 
+        color: #005792 !important; /* Xanh Bảo Việt đậm đà */
+        font-weight: 700;          /* In đậm cho dễ thấy */
+        text-decoration: none;     /* Bỏ gạch chân cho đẹp */
+    }
+    .stChatMessage a:hover { 
+        text-decoration: underline; 
+        color: #003366 !important; 
+    }
+    
+    /* Áp dụng màu đen cho mọi text khác */
+    .stChatMessage p, 
+    .stChatMessage div, 
+    .stChatMessage span, 
+    .stChatMessage li,
+    .stChatMessage h1, .stChatMessage h2, .stChatMessage h3,
+    .stChatMessage table, .stChatMessage td, .stChatMessage th {
+        color: #000000 !important; 
     }
 
-    /* Các thành phần khác trong Sidebar (Label, Input Admin) */
-    [data-testid="stSidebar"] label p, [data-testid="stSidebar"] .stRadio label p {
-        color: #000000 !important; font-weight: 600 !important;
+    /* 7. KHUNG NHẬP LIỆU (FIX LỖI CHỒNG KHUNG) */
+    .stChatInput {
+        background-color: transparent !important;
+        border: none !important;
     }
-    [data-testid="stSidebar"] input[type="password"] {
-        background-color: #E8E8E8 !important; color: #000000 !important; border: 1px solid #999999 !important;
+    div[data-testid="stChatInput"] > div {
+        background-color: transparent !important;
+        border-color: transparent !important;
     }
 
-    /* 4. BONG BÓNG CHAT & LINK (Giữ nguyên) */
-    .stChatMessage { padding: 12px 18px; border-radius: 18px; margin-bottom: 10px; display: flex; }
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(odd) { background-color: #F2F4F6 !important; border: none; flex-direction: row; }
-    .stChatMessage[data-testid="stChatMessage"]:nth-child(even) { background-color: #E3F2FD !important; border: 1px solid #BBDEFB; flex-direction: row-reverse; text-align: right; }
-    a { color: #005792 !important; font-weight: 700 !important; text-decoration: none; }
-    a:hover { color: #002a4d !important; text-decoration: underline !important; }
+    /* Tạo kiểu cho ô nhập liệu thật sự (Textarea) */
+    .stChatInput textarea {
+        background-color: #F0F2F5 !important; /* Xám nhạt giống Messenger */
+        color: #000000 !important;             /* Chữ đen */
+        border: 1px solid #DDDDDD !important;  /* Viền mỏng */
+        border-radius: 25px !important;        /* Bo tròn */
+        padding: 12px 20px;
+    }
+    .stChatInput textarea:focus {
+        border: 1px solid #005792 !important;
+        box-shadow: none !important;
+    }
+    
+    /* Nút Gửi */
+    .stChatInput button {
+        color: #005792 !important;
+    }
 
-    /* 5. INPUT CHAT CHÍNH */
-    .stChatInput textarea { background-color: #F0F2F5 !important; color: #000000 !important; border: 2px solid #005792 !important; border-radius: 30px; }
-
+    /* 8. Box Upload (Sidebar) */
+    [data-testid="stFileUploader"] {
+        background-color: #FFFFFF;
+        border: 1px dashed #CCC;
+        border-radius: 10px;
+        padding: 10px;
+    }
+    
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
