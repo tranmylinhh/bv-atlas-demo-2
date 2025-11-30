@@ -150,30 +150,33 @@ st.markdown("""
         border-radius: 10px;
         padding: 10px;
     }
-    /* ================================================== */
-    /* === BỔ SUNG: FIX MÀU Ô NHẬP MẬT KHẨU SIDEBAR === */
-    /* ================================================== */
+    /* === 2. SIDEBAR (KHU VỰC CẦN SỬA) === */
+    section[data-testid="stSidebar"] { 
+        background-color: #F7F9FB; 
+        border-right: 1px solid #E0E0E0; 
+    }
 
-    /* 1. Đổi màu tiêu đề "Nhập mật khẩu Admin" thành ĐEN */
-    [data-testid="stSidebar"] label p,
-    [data-testid="stSidebar"] label {
+    /* FIX 1: TIÊU ĐỀ & NHÃN (LABEL) TRONG SIDEBAR */
+    /* Nhắm thẳng vào widget label để ép màu đen */
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
         color: #000000 !important;
-        font-weight: bold !important;
+        font-weight: 700 !important;
         font-size: 15px !important;
     }
 
-    /* 2. Đổi ô nhập liệu: Nền Xám - Chữ Đen - Viền Xám */
-    [data-testid="stSidebar"] input {
-        background-color: #E0E0E0 !important; /* Nền xám rõ ràng */
-        color: #000000 !important;             /* Chữ/Dấu chấm đen */
-        border: 1px solid #999999 !important;  /* Viền đậm hơn để dễ thấy */
-        caret-color: #000000 !important;       /* Con trỏ chuột màu đen */
+    /* FIX 2: Ô NHẬP LIỆU TRONG SIDEBAR (MẬT KHẨU) */
+    /* Nhắm thẳng vào input bên trong stTextInput */
+    [data-testid="stSidebar"] [data-testid="stTextInput"] input {
+        background-color: #E0E0E0 !important; /* Nền Xám Đậm hơn chút để rõ */
+        color: #000000 !important;             /* Chữ Đen */
+        border: 1px solid #999999 !important;  /* Viền Đen mờ */
+        caret-color: #000000 !important;       /* Con trỏ chuột đen */
     }
-
-    /* 3. Đổi màu chữ của các lựa chọn Radio (Chế độ xem) thành ĐEN */
-    [data-testid="stSidebar"] div[role="radiogroup"] label p {
+    
+    /* FIX 3: LỰA CHỌN RADIO (CHẾ ĐỘ XEM) */
+    [data-testid="stSidebar"] [data-testid="stRadio"] label p {
         color: #000000 !important;
-        font-weight: 500 !important;
+        font-weight: 500;
     }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
