@@ -35,34 +35,7 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 500;
     }
-     /* === 2. SIDEBAR (KHU VỰC CẦN SỬA) === */
-    section[data-testid="stSidebar"] { 
-        background-color: #F7F9FB; 
-        border-right: 1px solid #E0E0E0; 
-    }
 
-    /* FIX 1: TIÊU ĐỀ & NHÃN (LABEL) TRONG SIDEBAR */
-    /* Nhắm thẳng vào widget label để ép màu đen */
-    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
-        color: #000000 !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-    }
-
-    /* FIX 2: Ô NHẬP LIỆU TRONG SIDEBAR (MẬT KHẨU) */
-    /* Nhắm thẳng vào input bên trong stTextInput */
-    [data-testid="stSidebar"] [data-testid="stTextInput"] input {
-        background-color: #E0E0E0 !important; /* Nền Xám Đậm hơn chút để rõ */
-        color: #000000 !important;             /* Chữ Đen */
-        border: 1px solid #999999 !important;  /* Viền Đen mờ */
-        caret-color: #000000 !important;       /* Con trỏ chuột đen */
-    }
-    
-    /* FIX 3: LỰA CHỌN RADIO (CHẾ ĐỘ XEM) */
-    [data-testid="stSidebar"] [data-testid="stRadio"] label p {
-        color: #000000 !important;
-        font-weight: 500;
-    }
     /* Chỉnh Logo Sidebar căn giữa và to */
     section[data-testid="stSidebar"] img {
         display: block;
@@ -71,13 +44,23 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) 
-    /* INPUT BOX (Ô nhập mật khẩu): Nền Xám - Chữ Đen */
-    [data-testid="stSidebar"] input {
-        background-color: #E8E8E8 !important; /* Màu xám rõ hơn */
+    /* 3. QUAN TRỌNG: Đổi màu chữ "Nhập mật khẩu Admin" thành ĐEN */
+    /* Chúng ta nhắm vào tất cả các label trong sidebar */
+    [data-testid="stSidebar"] .stMarkdown p, 
+    [data-testid="stSidebar"] label p,
+    [data-testid="stSidebar"] .stRadio label p {
         color: #000000 !important;
-        border: 1px solid #CCCCCC !important;
-        border-radius: 8px;
+        font-weight: 600 !important;
+    }
+
+    /* QUAN TRỌNG: Đổi màu ô nhập mật khẩu */
+    /* Nền Xám (#E8E8E8) - Chữ Đen - Viền Xám */
+    [data-testid="stSidebar"] input[type="password"],
+    [data-testid="stSidebar"] input[type="text"] {
+        background-color: #E8E8E8 !important;
+        color: #000000 !important;
+        border: 1px solid #999999 !important;
+        caret-color: #000000 !important; /* Màu con trỏ nháy */
     }
 
     /* 4. Header Chính (Giữa màn hình) */
