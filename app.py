@@ -150,7 +150,31 @@ st.markdown("""
         border-radius: 10px;
         padding: 10px;
     }
+    /* ================================================== */
+    /* === BỔ SUNG: FIX MÀU Ô NHẬP MẬT KHẨU SIDEBAR === */
+    /* ================================================== */
 
+    /* 1. Đổi màu tiêu đề "Nhập mật khẩu Admin" thành ĐEN */
+    [data-testid="stSidebar"] label p,
+    [data-testid="stSidebar"] label {
+        color: #000000 !important;
+        font-weight: bold !important;
+        font-size: 15px !important;
+    }
+
+    /* 2. Đổi ô nhập liệu: Nền Xám - Chữ Đen - Viền Xám */
+    [data-testid="stSidebar"] input {
+        background-color: #E0E0E0 !important; /* Nền xám rõ ràng */
+        color: #000000 !important;             /* Chữ/Dấu chấm đen */
+        border: 1px solid #999999 !important;  /* Viền đậm hơn để dễ thấy */
+        caret-color: #000000 !important;       /* Con trỏ chuột màu đen */
+    }
+
+    /* 3. Đổi màu chữ của các lựa chọn Radio (Chế độ xem) thành ĐEN */
+    [data-testid="stSidebar"] div[role="radiogroup"] label p {
+        color: #000000 !important;
+        font-weight: 500 !important;
+    }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
