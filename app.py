@@ -35,16 +35,7 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 500;
     }
-
-    /* Chỉnh Logo Sidebar căn giữa và to */
-    section[data-testid="stSidebar"] img {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 20px;
-    }
-
-    /* 3. QUAN TRỌNG: Đổi màu chữ "Nhập mật khẩu Admin" thành ĐEN */
+    /* QUAN TRỌNG: Đổi màu chữ "Nhập mật khẩu Admin" thành ĐEN */
     /* Chúng ta nhắm vào tất cả các label trong sidebar */
     [data-testid="stSidebar"] .stMarkdown p, 
     [data-testid="stSidebar"] label p,
@@ -61,6 +52,15 @@ st.markdown("""
         color: #000000 !important;
         border: 1px solid #999999 !important;
         caret-color: #000000 !important; /* Màu con trỏ nháy */
+    }
+
+
+    /* Chỉnh Logo Sidebar căn giữa và to */
+    section[data-testid="stSidebar"] img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 20px;
     }
 
     /* 4. Header Chính (Giữa màn hình) */
