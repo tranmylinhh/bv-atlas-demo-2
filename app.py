@@ -44,7 +44,28 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 3. Header Chính (Giữa màn hình) */
+    /* 3. TINH CHỈNH SIDEBAR (KHU VỰC ADMIN) */
+    section[data-testid="stSidebar"] { 
+        background-color: #F7F9FB; 
+        border-right: 1px solid #E0E0E0; 
+    }
+    
+    /* LABEL (Tiêu đề ô nhập): Màu Đen Đậm */
+    [data-testid="stSidebar"] label {
+        color: #000000 !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+    }
+    
+    /* INPUT BOX (Ô nhập mật khẩu): Nền Xám - Chữ Đen */
+    [data-testid="stSidebar"] input {
+        background-color: #E8E8E8 !important; /* Màu xám rõ hơn */
+        color: #000000 !important;
+        border: 1px solid #CCCCCC !important;
+        border-radius: 8px;
+    }
+
+    /* 4. Header Chính (Giữa màn hình) */
     .header-container {
         display: flex;
         flex-direction: column;
@@ -60,7 +81,7 @@ st.markdown("""
         margin-top: 15px;
     }
     
-    /* 4. Bong bóng Chat */
+    /* 5. Bong bóng Chat */
     .stChatMessage { 
         padding: 12px 18px; border-radius: 18px; margin-bottom: 10px; display: flex; color: #000000 !important;
     }
@@ -82,7 +103,7 @@ st.markdown("""
     }
     
 
-    /* 5. ÉP MÀU LINK XANH (QUAN TRỌNG - ĐÈ LÊN MÀU ĐEN Ở TRÊN) */
+    /* 6. ÉP MÀU LINK XANH (QUAN TRỌNG - ĐÈ LÊN MÀU ĐEN Ở TRÊN) */
     /* Chỉ áp dụng cho thẻ 'a' (đường dẫn) */
     .stChatMessage a { 
         color: #005792 !important; /* Xanh Bảo Việt đậm đà */
@@ -103,7 +124,7 @@ st.markdown("""
         color: #000000 !important; 
     }
 
-    /* 6. KHUNG NHẬP LIỆU (FIX LỖI CHỒNG KHUNG) */
+    /* 7. KHUNG NHẬP LIỆU (FIX LỖI CHỒNG KHUNG) */
     
     /* Ẩn khung chứa mặc định của Streamlit (Cái gây ra viền chồng) */
     .stChatInput {
@@ -134,7 +155,7 @@ st.markdown("""
         color: #005792 !important;
     }
 
-    /* 7. Box Upload (Sidebar) */
+    /* 8. Box Upload (Sidebar) */
     [data-testid="stFileUploader"] {
         background-color: #FFFFFF;
         border: 1px dashed #CCC;
